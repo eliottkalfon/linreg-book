@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>20&nbsp; Fitting a Multiple Linear Regression – Linear Regression with Gradient Descent: Mathematical Foundations of AI</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/eval-oos.html" rel="next">
+<link href="../chapters/multiple-lin-reg-lin-alg.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5ccb035bea26c1e21f80f44cf7c27909.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/multiple-lin-reg.html">Multiple Linear Regression</a></li><li class="breadcrumb-item"><a href="../chapters/fitting-mult-lin-reg.html"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Fitting a Multiple Linear Regression</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Linear Regression with Gradient Descent: Mathematical Foundations of AI</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../epigraph.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Epigraph</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Solar Panels and Ice Creams</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Representing Linear Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-space.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Representing Data as Points in Space</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Functions</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Measuring Regression Quality</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/measuring-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Evaluating Regression Quality</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/computing-error-sigma.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Computing Errors with Sigma Notation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-linear-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Fitting a Linear Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Derivatives and Gradient Descent</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/derivatives.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Derivatives</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/minimising-functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Minimising a Function with Derivatives</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chain-rule.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">The Chain Rule</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-gradient-descent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Fitting a Linear Regression with Gradient Descent</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Multiple Parameters</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/function-multiple-inputs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Functions with Multiple Inputs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-linear-alg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">First Steps in Linear Algebra</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/gradient-vector.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Gradient Vector</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/gradient-desc-multiple.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Gradient Descent for Multiple Inputs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-multiple-params.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Fitting the Slope and Intercept</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Multiple Linear Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-lin-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Multiple Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/lin-alg-continued.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Linear Algebra Continued</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-lin-reg-lin-alg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Representing Linear Regression with Linear Algebra</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-mult-lin-reg.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Fitting a Multiple Linear Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Using Linear Regression in the Real World</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/eval-oos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Estimating Linear Regression Performance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/interpretation-coeffs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Interpreting Linear Regression Coefficients</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Classification with Logistic Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/classification-with-log-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">The Classification Problem</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/log-reg-formula.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">The Logistic Regression Formula</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Evaluating Classification Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/scoring-classification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Evaluating Classification Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/calibrating-classification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Calibrating Classification Models</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Fitting a Logistic Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-log-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Fitting a Logistic Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="true">
+ <span class="menu-text">Conclusion</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/conclusion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Conclusion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/acknowledgements.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Acknowledgements</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/appendix-ce-gradient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Appendix: Deriving the Cross-Entropy Gradient</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#computing-the-mse-with-linear-algebra" id="toc-computing-the-mse-with-linear-algebra" class="nav-link active" data-scroll-target="#computing-the-mse-with-linear-algebra"><span class="header-section-number">20.1</span> Computing the MSE with linear algebra</a></li>
+  <li><a href="#computing-the-gradient-of-the-mse" id="toc-computing-the-gradient-of-the-mse" class="nav-link" data-scroll-target="#computing-the-gradient-of-the-mse"><span class="header-section-number">20.2</span> Computing the gradient of the MSE</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">20.3</span> Example</a></li>
+  <li><a href="#using-gradient-descent-to-fit-the-coefficients" id="toc-using-gradient-descent-to-fit-the-coefficients" class="nav-link" data-scroll-target="#using-gradient-descent-to-fit-the-coefficients"><span class="header-section-number">20.4</span> Using gradient descent to fit the coefficients</a></li>
+  <li><a href="#final-thoughts" id="toc-final-thoughts" class="nav-link" data-scroll-target="#final-thoughts"><span class="header-section-number">20.5</span> Final Thoughts</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions"><span class="header-section-number">20.6</span> Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/multiple-lin-reg.html">Multiple Linear Regression</a></li><li class="breadcrumb-item"><a href="../chapters/fitting-mult-lin-reg.html"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Fitting a Multiple Linear Regression</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Fitting a Multiple Linear Regression</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Concisely representing a multiple linear regression with linear algebra is important. But it does not help us find the best-fitting coefficients given the data.</p>
+<p>To do so, we will follow the same process as with a simple linear regression and use gradient descent to minimise the mean squared error (MSE) with regards to the vector of coefficients <span class="math inline">\(\mathbf{w}\)</span>.</p>
+<section id="computing-the-mse-with-linear-algebra" class="level2" data-number="20.1">
+<h2 data-number="20.1" class="anchored" data-anchor-id="computing-the-mse-with-linear-algebra"><span class="header-section-number">20.1</span> Computing the MSE with linear algebra</h2>
+<p>As a quick reminder, the mean squared error (MSE) is an error metric quantifying the distance between predictions and actual data.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/fitting-gradient-descent/error_bars.png" class="img-fluid figure-img"></p>
+<figcaption>Prediction errors shown as vertical bars</figcaption>
+</figure>
+</div>
+<p>It is computed by summing the squared differences between predictions and actual data:</p>
+<p><span class="math display">\[
+\text{MSE} = \frac{(\hat{y}_1 - y_1)^2 + (\hat{y}_2 - y_2)^2 + \cdots + (\hat{y}_n - y_n)^2}{n} = \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)^2
+\]</span></p>
+<p>The above formula assumes that predictions are a simple list of numbers we need to iterate over. Can we do it all in one go with vectors?</p>
+<p>The predictions are stored in a vector <span class="math inline">\(\hat{\mathbf{y}}\)</span>. To compute the MSE, we would need another vector, noted <span class="math inline">\(\mathbf{y}\)</span>, containing the actual values.</p>
+<p>Let’s take the following simple data as an example:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Observation</th>
+<th style="text-align: center;">Predicted (<span class="math inline">\(\hat{y}\)</span>)</th>
+<th style="text-align: center;">Actual (<span class="math inline">\(y\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">3</td>
+</tr>
+</tbody>
+</table>
+<p>Using vector subtraction, we can obtain the vector of differences (noted <span class="math inline">\(\mathbf{e}\)</span> for “errors”):</p>
+<p><span class="math display">\[
+\mathbf{e} = \hat{\mathbf{y}} - \mathbf{y} = \begin{pmatrix} 3 \\ 1 \\ 4 \end{pmatrix} - \begin{pmatrix} 2 \\ 2 \\ 3 \end{pmatrix} = \begin{pmatrix} 1 \\ -1 \\ 1 \end{pmatrix}
+\]</span></p>
+<p>Differences are good, but we need to go one step further to calculate the MSE. We need to square all differences and calculate the average value.</p>
+<p>From the <a href="../chapters/lin-alg-continued.html">linear algebra chapter</a>, is there a way to get the sum of the squared values of a vector? With a dot product!</p>
+<p><span class="math display">\[
+\mathbf{e} \cdot \mathbf{e} = 1 \times 1 + (-1) \times (-1) + 1 \times 1 = 1 + 1 + 1 = 3
+\]</span></p>
+<p>Now that we have the sum of the squared differences, we just need to divide by the number of data points to get the mean squared error. Putting this all together:</p>
+<p><span class="math display">\[
+\text{MSE} = \frac{1}{n} (\hat{\mathbf{y}} - \mathbf{y})^T (\hat{\mathbf{y}} - \mathbf{y})
+\]</span></p>
+<p>Let’s use the data from the example:</p>
+<p><span class="math display">\[
+\hat{\mathbf{y}} - \mathbf{y} = \begin{pmatrix} 1 \\ -1 \\ 1 \end{pmatrix} \quad \text{and} \quad (\hat{\mathbf{y}} - \mathbf{y})^T = \begin{pmatrix} 1 &amp; -1 &amp; 1 \end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[
+(\hat{\mathbf{y}} - \mathbf{y})^T (\hat{\mathbf{y}} - \mathbf{y}) = \begin{pmatrix} 1 &amp; -1 &amp; 1 \end{pmatrix} \begin{pmatrix} 1 \\ -1 \\ 1 \end{pmatrix} = 1 + 1 + 1 = 3
+\]</span></p>
+<p>Putting everything together:</p>
+<p><span class="math display">\[
+\text{MSE} = \frac{1}{3} \times 3 = 1
+\]</span></p>
+<p>We can now compute the MSE using vectors. This is a first step towards fitting a multiple linear regression. The missing piece we need for gradient descent is computing the gradient of the MSE with regards to the coefficient vector <span class="math inline">\(\mathbf{w}\)</span>.</p>
+</section>
+<section id="computing-the-gradient-of-the-mse" class="level2" data-number="20.2">
+<h2 data-number="20.2" class="anchored" data-anchor-id="computing-the-gradient-of-the-mse"><span class="header-section-number">20.2</span> Computing the gradient of the MSE</h2>
+<p>Similar to a simple linear regression, we need the coefficient vector <span class="math inline">\(\mathbf{w}\)</span> to appear in the MSE formula to compute the gradient:</p>
+<p><span class="math display">\[
+\text{MSE} = \frac{1}{n} (\hat{\mathbf{y}} - \mathbf{y})^T (\hat{\mathbf{y}} - \mathbf{y})
+\]</span></p>
+<p>To do so, we can substitute <span class="math inline">\(\hat{\mathbf{y}} = \mathbf{X}\mathbf{w}\)</span> into the formula, getting:</p>
+<p><span class="math display">\[
+\text{MSE}(\mathbf{w}) = \frac{1}{n} (\mathbf{X}\mathbf{w} - \mathbf{y})^T (\mathbf{X}\mathbf{w} - \mathbf{y})
+\]</span></p>
+<p>Remember that <span class="math inline">\(\mathbf{v}^T \mathbf{v}\)</span> is the matrix notation of a vector dot product, and that this MSE calculation is a dot product of a vector with itself.</p>
+<p>We can then use the <a href="../chapters/chain-rule.html">chain rule</a> as we did in previous chapters, representing the MSE as a composition of functions of the coefficient vector:</p>
+<p><span class="math display">\[
+f(g(\mathbf{w}))
+\]</span></p>
+<p>With:</p>
+<p><span class="math display">\[
+f(\mathbf{u}) = \frac{1}{n} \mathbf{u}^T \mathbf{u} \quad \text{(equivalent of } \frac{1}{n} u^2 \text{)}
+\]</span></p>
+<p><span class="math display">\[
+g(\mathbf{w}) = \mathbf{X}\mathbf{w} - \mathbf{y}
+\]</span></p>
+<p>Using the chain rule, we get:</p>
+<p><span class="math display">\[
+\frac{d\text{MSE}}{d\mathbf{w}} = \frac{df}{dg} \times \frac{dg}{d\mathbf{w}}
+\]</span></p>
+<p>Computing this part by part, the derivative of:</p>
+<p><span class="math display">\[
+f(\mathbf{u}) = \frac{1}{n} \mathbf{u}^T \mathbf{u} \quad \text{(equivalent of } \frac{1}{n} u^2 \text{)}
+\]</span></p>
+<p>is:</p>
+<p><span class="math display">\[
+f'(\mathbf{u})=\frac{1}{n} \cdot 2\mathbf{u}
+\]</span></p>
+<p>as the dot product of a vector with itself is the equivalent of squaring a scalar number. Remember that the derivative of <span class="math inline">\(x^2\)</span> is <span class="math inline">\(2x\)</span>. We then get:</p>
+<p><span class="math display">\[
+\frac{df}{dg} = \frac{1}{n} \cdot 2g = \frac{2}{n}g
+\]</span></p>
+<p>The derivative <span class="math inline">\(\frac{dg}{d\mathbf{w}}\)</span> is slightly more complicated. The function:</p>
+<p><span class="math display">\[
+g(\mathbf{w}) = \mathbf{X}\mathbf{w} - \mathbf{y}
+\]</span></p>
+<p>follows the same logic as the scalar case: the derivative of <span class="math inline">\(xw\)</span> with respect to <span class="math inline">\(w\)</span> is <span class="math inline">\(x\)</span>. Consider a single observation with two features <span class="math inline">\(x_1, x_2\)</span> and two weights <span class="math inline">\(w_1, w_2\)</span>. The prediction is <span class="math inline">\(x_1 w_1 + x_2 w_2\)</span>. Its derivative with respect to <span class="math inline">\(w_1\)</span> is <span class="math inline">\(x_1\)</span>, and with respect to <span class="math inline">\(w_2\)</span> it is <span class="math inline">\(x_2\)</span>. The gradient is <span class="math inline">\([x_1, x_2]^T\)</span>, the features arranged as a column (just like the weights). Extending this to all observations and all weights gives <span class="math inline">\(\mathbf{X}^T\)</span>:</p>
+<p><span class="math display">\[
+\frac{dg}{d\mathbf{w}} = \mathbf{X}^T
+\]</span></p>
+<p>Why this is <span class="math inline">\(\mathbf{X}^T\)</span> and not <span class="math inline">\(\mathbf{X}\)</span> confused me for a while when I was studying this. If you are not convinced, the following note should help.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Shapes, shapes, shapes
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>With the following example, we can see that the derivative of <span class="math inline">\(g(\mathbf{w})\)</span> has to be <span class="math inline">\(\mathbf{X}^T\)</span> and not <span class="math inline">\(\mathbf{X}\)</span>. This is the only way we can make the multiplications work and get a final gradient of the same shape as <span class="math inline">\(\mathbf{w}\)</span>.</p>
+<p>Let’s consider three observations and two features. The feature matrix <span class="math inline">\(\mathbf{X}\)</span>, the weight vector <span class="math inline">\(\mathbf{w}\)</span> and the target vector <span class="math inline">\(\mathbf{y}\)</span> are:</p>
+<p><span class="math display">\[
+\mathbf{X} = \begin{pmatrix} x_{11} &amp; x_{12} \\ x_{21} &amp; x_{22} \\ x_{31} &amp; x_{32} \end{pmatrix} \quad \mathbf{w} = \begin{pmatrix} w_1 \\ w_2 \end{pmatrix} \quad \mathbf{y} = \begin{pmatrix} y_1 \\ y_2 \\ y_3 \end{pmatrix}
+\]</span></p>
+<p>The predictions <span class="math inline">\(\hat{\mathbf{y}} = \mathbf{X}\mathbf{w}\)</span> have 3 rows and 1 column, so the error vector <span class="math inline">\(\hat{\mathbf{y}} - \mathbf{y}\)</span> also has 3 rows and 1 column, the same shape as <span class="math inline">\(\mathbf{y}\)</span>. The gradient must have the same shape as <span class="math inline">\(\mathbf{w}\)</span>, 2 rows and 1 column.</p>
+<p>Multiplying <span class="math inline">\(\mathbf{X}\)</span> directly by this error vector is not even a valid matrix multiplication. The number of columns of <span class="math inline">\(\mathbf{X}\)</span>, 2, does not match the number of rows of the error vector, 3.</p>
+<p><span class="math inline">\(\mathbf{X}^T\)</span> is a matrix with 2 rows and 3 columns:</p>
+<p><span class="math display">\[
+\mathbf{X}^T = \begin{pmatrix} x_{11} &amp; x_{21} &amp; x_{31} \\ x_{12} &amp; x_{22} &amp; x_{32} \end{pmatrix}
+\]</span></p>
+<p>Multiplying <span class="math inline">\(\mathbf{X}^T\)</span> by the error vector gives a result with 2 rows and 1 column, exactly the shape of <span class="math inline">\(\mathbf{w}\)</span>:</p>
+<p><span class="math display">\[
+\mathbf{X}^T (\hat{\mathbf{y}} - \mathbf{y}) = \begin{pmatrix} x_{11} &amp; x_{21} &amp; x_{31} \\ x_{12} &amp; x_{22} &amp; x_{32} \end{pmatrix} \begin{pmatrix} \hat{y}_1 - y_1 \\ \hat{y}_2 - y_2 \\ \hat{y}_3 - y_3 \end{pmatrix}
+\]</span></p>
+<p>Only <span class="math inline">\(\mathbf{X}^T\)</span> produces a gradient with the same shape as <span class="math inline">\(\mathbf{w}\)</span>.</p>
+</div>
+</div>
+</div>
+<p>Putting it all together, we get:</p>
+<p><span class="math display">\[\begin{aligned}
+\frac{d\text{MSE}}{d\mathbf{w}} &amp;= \frac{df}{dg} \times \frac{dg}{d\mathbf{w}} \\
+&amp;= \mathbf{X}^T \times \frac{2}{n}(\mathbf{X}\mathbf{w} - \mathbf{y}) \\
+&amp;= \frac{2}{n} \mathbf{X}^T (\mathbf{X}\mathbf{w} - \mathbf{y})
+\end{aligned}\]</span></p>
+<p>Putting all of this together, we get the gradient of the MSE:</p>
+<p><span class="math display">\[
+\nabla \text{MSE}(\mathbf{w}) = \frac{2}{n} \mathbf{X}^T (\mathbf{X}\mathbf{w} - \mathbf{y})
+\]</span></p>
+<p>Remember that <span class="math inline">\(\mathbf{X}\)</span> is the feature matrix and <span class="math inline">\(\mathbf{X}\mathbf{w} - \mathbf{y}\)</span> is the vector of errors.</p>
+</section>
+<section id="example" class="level2" data-number="20.3">
+<h2 data-number="20.3" class="anchored" data-anchor-id="example"><span class="header-section-number">20.3</span> Example</h2>
+<p>Let’s compute this gradient for a concrete example. Consider the following data:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Temperature (°C)</th>
+<th style="text-align: center;">Ice Cream Sales</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">10</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">12</td>
+</tr>
+</tbody>
+</table>
+<p>The initial set of coefficients is:</p>
+<p><span class="math display">\[
+\mathbf{w}_0 = \begin{pmatrix} 2 \\ 2 \end{pmatrix}
+\]</span></p>
+<p>With the first number the intercept and the second the slope. The feature matrix is:</p>
+<p><span class="math display">\[
+\mathbf{X} = \begin{pmatrix} 1 &amp; 3 \\ 1 &amp; 4 \\ 1 &amp; 5 \end{pmatrix}
+\]</span></p>
+<p>Remember that a column of <span class="math inline">\(1\)</span>s is added on the left for the intercept in the matrix multiplication.</p>
+<p>To get <span class="math inline">\(\mathbf{X}^T\)</span>, we swap the rows of <span class="math inline">\(\mathbf{X}\)</span> with its columns:</p>
+<p><span class="math display">\[
+\mathbf{X}^T = \begin{pmatrix} 1 &amp; 1 &amp; 1 \\ 3 &amp; 4 &amp; 5 \end{pmatrix}
+\]</span></p>
+<p>We then compute the predictions and errors:</p>
+<p><span class="math display">\[
+\mathbf{X}\mathbf{w}_0 = \begin{pmatrix} 1 &amp; 3 \\ 1 &amp; 4 \\ 1 &amp; 5 \end{pmatrix} \begin{pmatrix} 2 \\ 2 \end{pmatrix} = \begin{pmatrix} 8 \\ 10 \\ 12 \end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{X}\mathbf{w}_0 - \mathbf{y} = \begin{pmatrix} 8 \\ 10 \\ 12 \end{pmatrix} - \begin{pmatrix} 10 \\ 11 \\ 12 \end{pmatrix} = \begin{pmatrix} -2 \\ -1 \\ 0 \end{pmatrix}
+\]</span></p>
+<p>We now have all the elements to compute the gradient of the MSE for <span class="math inline">\(\mathbf{w}_0 = (2, 2)\)</span>:</p>
+<p><span class="math display">\[\begin{aligned}
+\nabla \text{MSE}(\mathbf{w}_0) &amp;= \frac{2}{n} \mathbf{X}^T (\mathbf{X}\mathbf{w}_0 - \mathbf{y}) \\
+&amp;= \frac{2}{3} \begin{pmatrix} 1 &amp; 1 &amp; 1 \\ 3 &amp; 4 &amp; 5 \end{pmatrix} \begin{pmatrix} -2 \\ -1 \\ 0 \end{pmatrix} \\
+&amp;= \frac{2}{3} \begin{pmatrix} 1 \times (-2) + 1 \times (-1) + 1 \times 0 \\ 3 \times (-2) + 4 \times (-1) + 5 \times 0 \end{pmatrix} \\
+&amp;= \frac{2}{3} \begin{pmatrix} -3 \\ -10 \end{pmatrix} \\
+&amp;= \begin{pmatrix} -2 \\ -6.7 \end{pmatrix}
+\end{aligned}\]</span></p>
+<p>Both the intercept and the slope need to increase; the gradient is negative, so stepping in the opposite direction means increasing.</p>
+</section>
+<section id="using-gradient-descent-to-fit-the-coefficients" class="level2" data-number="20.4">
+<h2 data-number="20.4" class="anchored" data-anchor-id="using-gradient-descent-to-fit-the-coefficients"><span class="header-section-number">20.4</span> Using gradient descent to fit the coefficients</h2>
+<p>We now know how to calculate the mean squared error with linear algebra and compute its gradient with regards to the coefficient vector. These are all the required building blocks to minimise the MSE:</p>
+<ol type="1">
+<li>Start with a random choice of <span class="math inline">\(\mathbf{w}_0 = (2, 2)\)</span></li>
+<li>Compute the gradient vector <span class="math inline">\(\nabla \text{MSE}(\mathbf{w})\)</span></li>
+<li>Update <span class="math inline">\(\mathbf{w}\)</span> with the gradient update rule, using <span class="math inline">\(0.1\)</span> as the learning rate:</li>
+</ol>
+<p><span class="math display">\[
+\mathbf{w}_{t+1} = \mathbf{w}_t - \text{learning rate} \times \nabla \text{MSE}(\mathbf{w}_t)
+\]</span></p>
+<ol start="4" type="1">
+<li>Repeat until convergence: <span class="math inline">\(\mathbf{w}_{t+1} \approx \mathbf{w}_t\)</span></li>
+</ol>
+<p><em>Step 1</em></p>
+<p>We have already computed the gradient of the MSE at <span class="math inline">\(\mathbf{w}_0 = (2, 2)\)</span> above. We can substitute the values into the update equation:</p>
+<p><span class="math display">\[
+\mathbf{w}_1 = \begin{pmatrix} 2 \\ 2 \end{pmatrix} - 0.1 \times \begin{pmatrix} -2 \\ -6.7 \end{pmatrix} = \begin{pmatrix} 2 + 0.2 \\ 2 + 0.7 \end{pmatrix} = \begin{pmatrix} 2.2 \\ 2.7 \end{pmatrix}
+\]</span></p>
+<p><em>Step 2</em></p>
+<p>With <span class="math inline">\(\mathbf{w}_1 = (2.2, 2.7)\)</span>, compute predictions and errors:</p>
+<p><span class="math display">\[
+\mathbf{X}\mathbf{w}_1 = \begin{pmatrix} 1 &amp; 3 \\ 1 &amp; 4 \\ 1 &amp; 5 \end{pmatrix} \begin{pmatrix} 2.2 \\ 2.7 \end{pmatrix} = \begin{pmatrix} 10.3 \\ 13.0 \\ 15.7 \end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{X}\mathbf{w}_1 - \mathbf{y} = \begin{pmatrix} 10.3 \\ 13.0 \\ 15.7 \end{pmatrix} - \begin{pmatrix} 10 \\ 11 \\ 12 \end{pmatrix} = \begin{pmatrix} 0.3 \\ 2.0 \\ 3.7 \end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[\begin{aligned}
+\nabla \text{MSE}(\mathbf{w}_1) &amp;= \frac{2}{3} \begin{pmatrix} 1 &amp; 1 &amp; 1 \\ 3 &amp; 4 &amp; 5 \end{pmatrix} \begin{pmatrix} 0.3 \\ 2.0 \\ 3.7 \end{pmatrix} \\
+&amp;= \frac{2}{3} \begin{pmatrix} 6.0 \\ 27.4 \end{pmatrix} = \begin{pmatrix} 4.0 \\ 18.3 \end{pmatrix}
+\end{aligned}\]</span></p>
+<p><span class="math display">\[
+\mathbf{w}_2 = \begin{pmatrix} 2.2 \\ 2.7 \end{pmatrix} - 0.1 \times \begin{pmatrix} 4.0 \\ 18.3 \end{pmatrix} = \begin{pmatrix} 1.8 \\ 0.9 \end{pmatrix}
+\]</span></p>
+<p>Notice the oscillation: the slope jumped from <span class="math inline">\(2\)</span> to <span class="math inline">\(2.7\)</span> and back down to <span class="math inline">\(0.9\)</span>. This is gradient descent correcting itself, similar to what we saw in previous chapters. After many more iterations, the algorithm converges to the optimal coefficients.</p>
+<div id="exr-gd-mult-lr" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 20.1</strong></span> Consider the following data:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Temperature (°C)</th>
+<th style="text-align: center;">Ice Cream Sales</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">9</td>
+</tr>
+</tbody>
+</table>
+<p>Starting from <span class="math inline">\(\mathbf{w}_0 = (2, 2)\)</span> with a learning rate of <span class="math inline">\(0.05\)</span>:</p>
+<ol type="1">
+<li>Write out the feature matrix <span class="math inline">\(\mathbf{X}\)</span> (with a column of <span class="math inline">\(1\)</span>s) and the vector <span class="math inline">\(\mathbf{y}\)</span>.</li>
+<li>Compute the predictions <span class="math inline">\(\mathbf{X}\mathbf{w}_0\)</span> and the errors <span class="math inline">\(\mathbf{X}\mathbf{w}_0 - \mathbf{y}\)</span>.</li>
+<li>Compute <span class="math inline">\(\nabla \text{MSE}(\mathbf{w}_0) = \frac{2}{3} \mathbf{X}^T (\mathbf{X}\mathbf{w}_0 - \mathbf{y})\)</span>.</li>
+<li>Update <span class="math inline">\(\mathbf{w}_1 = \mathbf{w}_0 - 0.05 \times \nabla \text{MSE}(\mathbf{w}_0)\)</span>.</li>
+<li>What line do you think the algorithm is converging to?</li>
+</ol>
+</div>
+</section>
+<section id="final-thoughts" class="level2" data-number="20.5">
+<h2 data-number="20.5" class="anchored" data-anchor-id="final-thoughts"><span class="header-section-number">20.5</span> Final Thoughts</h2>
+<p>Fitting a multiple linear regression is very similar to fitting a simple linear regression. The most difficult part of this process is understanding all of its core components: functions, derivatives, linear algebra, gradient descent. But you made it, congratulations.</p>
+<p>The key result of this chapter is the gradient formula:</p>
+<p><span class="math display">\[
+\nabla \text{MSE}(\mathbf{w}) = \frac{2}{n} \mathbf{X}^T (\mathbf{X}\mathbf{w} - \mathbf{y})
+\]</span></p>
+<p>This single expression works for any number of features and any number of observations. Whether fitting a simple regression with one slope or a model with hundreds of features, the same formula and the same algorithm apply.</p>
+</section>
+<section id="solutions" class="level2" data-number="20.6">
+<h2 data-number="20.6" class="anchored" data-anchor-id="solutions"><span class="header-section-number">20.6</span> Solutions</h2>
+<div id="sol-gd-mult-lr" class="proof solution">
+<p><span class="proof-title"><em>Solution 20.1</em>. </span><a href="#exr-gd-mult-lr" class="quarto-xref">Exercise&nbsp;<span>20.1</span></a></p>
+<p><strong>1.</strong> The feature matrix and target vector:</p>
+<p><span class="math display">\[
+\mathbf{X} = \begin{pmatrix} 1 &amp; 1 \\ 1 &amp; 2 \\ 1 &amp; 3 \end{pmatrix} \quad \text{and} \quad \mathbf{y} = \begin{pmatrix} 5 \\ 7 \\ 9 \end{pmatrix}
+\]</span></p>
+<p><strong>2.</strong> Predictions and errors:</p>
+<p><span class="math display">\[
+\mathbf{X}\mathbf{w}_0 = \begin{pmatrix} 1 &amp; 1 \\ 1 &amp; 2 \\ 1 &amp; 3 \end{pmatrix} \begin{pmatrix} 2 \\ 2 \end{pmatrix} = \begin{pmatrix} 4 \\ 6 \\ 8 \end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{X}\mathbf{w}_0 - \mathbf{y} = \begin{pmatrix} 4 \\ 6 \\ 8 \end{pmatrix} - \begin{pmatrix} 5 \\ 7 \\ 9 \end{pmatrix} = \begin{pmatrix} -1 \\ -1 \\ -1 \end{pmatrix}
+\]</span></p>
+<p><strong>3.</strong> The gradient:</p>
+<p><span class="math display">\[\begin{aligned}
+\nabla \text{MSE}(\mathbf{w}_0) &amp;= \frac{2}{3} \begin{pmatrix} 1 &amp; 1 &amp; 1 \\ 1 &amp; 2 &amp; 3 \end{pmatrix} \begin{pmatrix} -1 \\ -1 \\ -1 \end{pmatrix} \\
+&amp;= \frac{2}{3} \begin{pmatrix} -3 \\ -6 \end{pmatrix} = \begin{pmatrix} -2 \\ -4 \end{pmatrix}
+\end{aligned}\]</span></p>
+<p><strong>4.</strong> Update:</p>
+<p><span class="math display">\[
+\mathbf{w}_1 = \begin{pmatrix} 2 \\ 2 \end{pmatrix} - 0.05 \times \begin{pmatrix} -2 \\ -4 \end{pmatrix} = \begin{pmatrix} 2.1 \\ 2.2 \end{pmatrix}
+\]</span></p>
+<p><strong>5.</strong> The data follows the line <span class="math inline">\(y = 3 + 2x\)</span>, so the algorithm is converging to <span class="math inline">\(\mathbf{w} = (3, 2)\)</span>.</p>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/multiple-lin-reg-lin-alg.html" class="pagination-link" aria-label="Representing Linear Regression with Linear Algebra">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Representing Linear Regression with Linear Algebra</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/eval-oos.html" class="pagination-link" aria-label="Estimating Linear Regression Performance">
+        <span class="nav-page-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Estimating Linear Regression Performance</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

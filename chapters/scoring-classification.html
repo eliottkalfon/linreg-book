@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>25&nbsp; Evaluating Classification Models – Linear Regression with Gradient Descent: Mathematical Foundations of AI</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/calibrating-classification.html" rel="next">
+<link href="../chapters/log-reg-formula.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5ccb035bea26c1e21f80f44cf7c27909.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/scoring-classification.html">Evaluating Classification Models</a></li><li class="breadcrumb-item"><a href="../chapters/scoring-classification.html"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Evaluating Classification Models</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Linear Regression with Gradient Descent: Mathematical Foundations of AI</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../epigraph.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Epigraph</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Solar Panels and Ice Creams</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Representing Linear Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-space.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Representing Data as Points in Space</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Functions</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Measuring Regression Quality</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/measuring-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Evaluating Regression Quality</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/computing-error-sigma.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Computing Errors with Sigma Notation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-linear-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Fitting a Linear Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Derivatives and Gradient Descent</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/derivatives.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Derivatives</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/minimising-functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Minimising a Function with Derivatives</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chain-rule.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">The Chain Rule</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-gradient-descent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Fitting a Linear Regression with Gradient Descent</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Multiple Parameters</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/function-multiple-inputs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Functions with Multiple Inputs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-linear-alg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">First Steps in Linear Algebra</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/gradient-vector.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Gradient Vector</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/gradient-desc-multiple.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Gradient Descent for Multiple Inputs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-multiple-params.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Fitting the Slope and Intercept</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Multiple Linear Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-lin-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Multiple Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/lin-alg-continued.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Linear Algebra Continued</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-lin-reg-lin-alg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Representing Linear Regression with Linear Algebra</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-mult-lin-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Fitting a Multiple Linear Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Using Linear Regression in the Real World</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/eval-oos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Estimating Linear Regression Performance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/interpretation-coeffs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Interpreting Linear Regression Coefficients</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Classification with Logistic Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/classification-with-log-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">The Classification Problem</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/log-reg-formula.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">The Logistic Regression Formula</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Evaluating Classification Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/scoring-classification.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Evaluating Classification Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/calibrating-classification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Calibrating Classification Models</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Fitting a Logistic Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-log-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Fitting a Logistic Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="true">
+ <span class="menu-text">Conclusion</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/conclusion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Conclusion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/acknowledgements.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Acknowledgements</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/appendix-ce-gradient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Appendix: Deriving the Cross-Entropy Gradient</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#scoring-and-calibration" id="toc-scoring-and-calibration" class="nav-link active" data-scroll-target="#scoring-and-calibration"><span class="header-section-number">25.1</span> Scoring and Calibration</a></li>
+  <li><a href="#scoring-predictions" id="toc-scoring-predictions" class="nav-link" data-scroll-target="#scoring-predictions"><span class="header-section-number">25.2</span> Scoring Predictions</a></li>
+  <li><a href="#beyond-accuracy-recall-and-precision" id="toc-beyond-accuracy-recall-and-precision" class="nav-link" data-scroll-target="#beyond-accuracy-recall-and-precision"><span class="header-section-number">25.3</span> Beyond Accuracy: Recall and Precision</a>
+  <ul class="collapse">
+  <li><a href="#useful-vocabulary" id="toc-useful-vocabulary" class="nav-link" data-scroll-target="#useful-vocabulary"><span class="header-section-number">25.3.1</span> Useful Vocabulary</a></li>
+  <li><a href="#recall" id="toc-recall" class="nav-link" data-scroll-target="#recall"><span class="header-section-number">25.3.2</span> Recall</a></li>
+  <li><a href="#precision" id="toc-precision" class="nav-link" data-scroll-target="#precision"><span class="header-section-number">25.3.3</span> Precision</a></li>
+  <li><a href="#revisiting-accuracy" id="toc-revisiting-accuracy" class="nav-link" data-scroll-target="#revisiting-accuracy"><span class="header-section-number">25.3.4</span> Revisiting Accuracy</a></li>
+  </ul></li>
+  <li><a href="#practical-model-selection" id="toc-practical-model-selection" class="nav-link" data-scroll-target="#practical-model-selection"><span class="header-section-number">25.4</span> Practical Model Selection</a></li>
+  <li><a href="#probabilities-and-thresholds" id="toc-probabilities-and-thresholds" class="nav-link" data-scroll-target="#probabilities-and-thresholds"><span class="header-section-number">25.5</span> Probabilities and Thresholds</a></li>
+  <li><a href="#final-thoughts" id="toc-final-thoughts" class="nav-link" data-scroll-target="#final-thoughts"><span class="header-section-number">25.6</span> Final Thoughts</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions"><span class="header-section-number">25.7</span> Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/scoring-classification.html">Evaluating Classification Models</a></li><li class="breadcrumb-item"><a href="../chapters/scoring-classification.html"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Evaluating Classification Models</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Evaluating Classification Models</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Now, how do we know when a logistic regression generates accurate predictions? Like in the linear regression case, we could use the distance between predicted values and the actual values.</p>
+<p>Looking at these two logistic regressions fitted on the tumour data from the <a href="../chapters/classification-with-log-reg.html" target="_blank">previous chapter</a>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/evaluating-log-reg/logistic_good_poor_fit.png" class="img-fluid figure-img"></p>
+<figcaption>Logistic Regression A fits the data well, Logistic Regression B does not</figcaption>
+</figure>
+</div>
+<p>We see that logistic regression A is a much better fit. The error is measured by the distance between the data points and the curve:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/evaluating-log-reg/logistic_good_poor_fit_errors.png" class="img-fluid figure-img"></p>
+<figcaption>Visualising prediction errors as vertical dashed lines</figcaption>
+</figure>
+</div>
+<p>Does it make sense to use the mean squared error (MSE) for this problem? Maybe, but we can do much better.</p>
+<section id="scoring-and-calibration" class="level2" data-number="25.1">
+<h2 data-number="25.1" class="anchored" data-anchor-id="scoring-and-calibration"><span class="header-section-number">25.1</span> Scoring and Calibration</h2>
+<p>Imagine a model A predicting the probability of an email being spam at 90%, and a model B at 98%. The email is effectively spam. Yes, model B is better than A. But in practice, does this make a difference?</p>
+<p>In a classification model, there are two components to errors:</p>
+<ul>
+<li>Scoring: is the model classifying observations correctly?</li>
+<li>Calibration: do the probabilities predicted by the model match reality?</li>
+</ul>
+<p>Imagine we classify as “spam” all emails with a predicted probability of being spam of 60% or more.</p>
+<p>In terms of scoring, both models A and B have a perfect score, as they correctly classify the email as spam. In terms of calibration, model B is better calibrated, as its predicted probability is closer to 1.</p>
+<p>The following sections explore these two components in depth.</p>
+</section>
+<section id="scoring-predictions" class="level2" data-number="25.2">
+<h2 data-number="25.2" class="anchored" data-anchor-id="scoring-predictions"><span class="header-section-number">25.2</span> Scoring Predictions</h2>
+<p>We train two models: Model A and Model B. We now want to determine which of the two is best.</p>
+<p>To do so, we remove a test set from the training data, and generate predictions using both models. For these observations, we also have the ground truth, the true label of each.</p>
+<p>We get the following results by generating predictions for the test set:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Observation</th>
+<th style="text-align: center;">Model A</th>
+<th style="text-align: center;">Model B</th>
+<th style="text-align: center;">Truth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">5</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Which of the models is the most accurate?</p>
+<p>You could start by counting the number of errors of each model:</p>
+<ul>
+<li>Model A made two errors: observations 1 and 5</li>
+<li>Model B made one error: observation 2</li>
+</ul>
+<p>In other words, Model A was correct three times out of five whereas Model B was correct four times out of five. Model B seems more correct on average.</p>
+<p>More than just “three out of five”, we can say that Model A was correct 60% of the time. This metric is called the accuracy of a model.</p>
+<p><span class="math display">\[
+\text{Accuracy} = \frac{\text{Number of observations correctly predicted}}{\text{Total observation count}}
+\]</span></p>
+<div id="exr-acc" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 25.1</strong></span> Calculate the accuracy of Model B.</p>
+</div>
+<p>When you hear the words “model accuracy” in the media, this is it.</p>
+</section>
+<section id="beyond-accuracy-recall-and-precision" class="level2" data-number="25.3">
+<h2 data-number="25.3" class="anchored" data-anchor-id="beyond-accuracy-recall-and-precision"><span class="header-section-number">25.3</span> Beyond Accuracy: Recall and Precision</h2>
+<p>But is accuracy sufficient? To answer this question, we need to ask another question: Are all errors the same? Do they have the same consequences on the world?</p>
+<p>To explore this, let us move beyond simple <span class="math inline">\(\times\)</span> and <span class="math inline">\(\circ\)</span> and into the world of tumour diagnosis. There, a benign mass misdiagnosed as a malignant tumour would generate stress and inconvenience. A malignant tumour misdiagnosed as benign could have fatal consequences.</p>
+<p>Let us now consider the two following models, with <span class="math inline">\(\circ\)</span> representing a benign mass and <span class="math inline">\(\times\)</span> representing a malignant tumour:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Observation</th>
+<th style="text-align: center;">Model A</th>
+<th style="text-align: center;">Model B</th>
+<th style="text-align: center;">Truth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">5</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">6</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">7</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">8</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+</tbody>
+</table>
+<div id="exr-acc-ab" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 25.2</strong></span> Show that Model A has a higher accuracy than Model B.</p>
+</div>
+<p>Even though Model A has higher accuracy than Model B, it misclassified one malignant tumour as benign (Observation 5).</p>
+<p>On the other hand, Model B classified two benign masses as malignant (Observations 3 and 4) but caught all the malignant tumours. If you were a patient, which model would you prefer?</p>
+<p>This shows that accuracy is only a part of the picture. How can we move from the description above to actual metrics?</p>
+<section id="useful-vocabulary" class="level3" data-number="25.3.1">
+<h3 data-number="25.3.1" class="anchored" data-anchor-id="useful-vocabulary"><span class="header-section-number">25.3.1</span> Useful Vocabulary</h3>
+<p>Before going into error metrics, it is important to introduce some vocabulary.</p>
+<p>In binary classification, the model learns to assign observations into two categories, such as “benign” and “malignant” in the case of tumour diagnosis, or “spam” and “non-spam” for email filtering.</p>
+<p>Mathematically, these two labels are represented as 1 and 0. Generally, the class that the model was built to detect is assigned 1 and the other 0. In tumour diagnosis, the malignant label is assigned the number 1 as these are the cases the model was designed for. Similarly, in email filtering, the label “spam” is assigned the number 1, as the model detects spam messages to filter them out of the inbox.</p>
+<p>In the example of tumour diagnosis, a malignant tumour correctly classified as “malignant” is called a True Positive. On the other hand, a malignant tumour misclassified as a benign mass is a False Negative.</p>
+<p>Here, the words “positive” or “negative” are not value judgements. They are simply another way to say 1 or 0. Thinking about medical examples may make more sense. When a medical test is positive, it means that the targeted substance is present. The same applies to spam detection. A positive spam detection means classifying an email as “spam”.</p>
+<p>Going back to jargon, a True Positive is when the variable of interest is correctly detected (e.g., “spam” or “malignant”). A False Negative is when the variable of interest goes undetected. As an example, a malignant tumour is misdiagnosed as “benign”, or a spam email lands into the inbox.</p>
+<p>Based on these, what would be a False Positive and a True Negative? Think about it in terms of tumours and spam emails before reading on.</p>
+<ul>
+<li>False Positive: model wrongly predicts the presence of the variable of interest, e.g., a legitimate email predicted as “spam”</li>
+<li>True Negative: model correctly predicts the absence of the variable of interest, e.g., a benign mass is correctly classified as a benign mass</li>
+</ul>
+<p>These can be summarised in the following table:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 35%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted Positive</th>
+<th style="text-align: center;">Predicted Negative</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual Positive</td>
+<td style="text-align: center;">True Positive</td>
+<td style="text-align: center;">False Negative</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual Negative</td>
+<td style="text-align: center;">False Positive</td>
+<td style="text-align: center;">True Negative</td>
+</tr>
+</tbody>
+</table>
+<p>This is also called the confusion matrix.</p>
+<p>To make this more concrete, this table could be adapted to the tumour diagnosis example:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 28%">
+<col style="width: 34%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted Malignant</th>
+<th style="text-align: center;">Predicted Benign</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual Malignant</td>
+<td style="text-align: center;">Malignant tumour correctly classified as “malignant”</td>
+<td style="text-align: center;">Malignant tumour incorrectly classified as “benign”</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual Benign</td>
+<td style="text-align: center;">Benign mass incorrectly classified as “malignant”</td>
+<td style="text-align: center;">Benign mass correctly classified as “benign”</td>
+</tr>
+</tbody>
+</table>
+<p>Or for spam filtering:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 28%">
+<col style="width: 32%">
+<col style="width: 39%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted Spam</th>
+<th style="text-align: center;">Predicted Not Spam</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual Spam</td>
+<td style="text-align: center;">Spam correctly classified as “spam”</td>
+<td style="text-align: center;">Spam incorrectly classified as “not spam”</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual Not Spam</td>
+<td style="text-align: center;">Legitimate email incorrectly classified as “spam”</td>
+<td style="text-align: center;">Legitimate email correctly classified as “not spam”</td>
+</tr>
+</tbody>
+</table>
+<div id="exr-conf-fraud" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 25.3</strong></span> To test your understanding, try building a confusion matrix for a payment fraud detection model.</p>
+</div>
+<p>Now that we clearly understand the language of True/False Negative/Positive, let’s get back to measuring the performance of a machine learning model.</p>
+</section>
+<section id="recall" class="level3" data-number="25.3.2">
+<h3 data-number="25.3.2" class="anchored" data-anchor-id="recall"><span class="header-section-number">25.3.2</span> Recall</h3>
+<p>In the example of tumour diagnosis, we would like a model that catches as many malignant tumours as possible. This is because False Negatives, i.e.&nbsp;misdiagnosing a malignant tumour as benign, can have fatal consequences. We want to compare the performances of Models A and B:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Observation</th>
+<th style="text-align: center;">Model A</th>
+<th style="text-align: center;">Model B</th>
+<th style="text-align: center;">Truth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">5</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">6</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">7</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">8</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Recall is the metric that answers the question: out of all the positive cases, how many did the model catch?</p>
+<p>Rephrasing this for the tumour diagnosis example: out of all the malignant tumours, how many did the model catch?</p>
+<p>This is calculated as follows:</p>
+<p><span class="math display">\[
+\text{Recall} = \frac{\text{Malignant tumours correctly detected by the model}}{\text{All malignant observations}}
+\]</span></p>
+<p>Rephrasing this in terms of True/False Positive, we get:</p>
+<p><span class="math display">\[
+\text{Recall} = \frac{\text{True Positives}}{\text{True Positives} + \text{False Negatives}}
+\]</span></p>
+<p>Calculating Recall for Model B:</p>
+<p><span class="math display">\[
+\text{Recall}_{\text{Model B}} = \frac{4}{4 + 0} = 100\%
+\]</span></p>
+<div id="exr-recall-a" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 25.4</strong></span> Calculate the recall of Model A, and prove that it is <span class="math inline">\(75\%\)</span>.</p>
+</div>
+<p>In the case of disease diagnosis, recall is a critical metric as missing positive cases can have dire consequences on a patient’s life.</p>
+</section>
+<section id="precision" class="level3" data-number="25.3.3">
+<h3 data-number="25.3.3" class="anchored" data-anchor-id="precision"><span class="header-section-number">25.3.3</span> Precision</h3>
+<p>In other scenarios, when the cost of a False Positive is high, we care for the precision of the model. In other words, we want to avoid False Positives; wrongly predicting the variable of interest.</p>
+<p>Building a spam detection algorithm, the objective is to classify incoming emails as either “spam” or “non-spam”. Every email classified as “spam” would be filtered out of the inbox. In line with the previous section, the positive case would be “spam”, as it is the case that would require action; filtering email out of the inbox.</p>
+<p>In spam filtering, False Positives can have serious negative consequences. Once, a recruiter’s email ended up in my spam folder. Without her reminder, I would have never worked at her company because of a spam filtering error.</p>
+<p>Precision answers the question: Out of all the observations predicted as positive, how many were True Positives, i.e., actually positive?</p>
+<p>For this reason, the most important metric here is precision: out of the messages classified as spam, how many were actually spam messages?</p>
+<p>This can be computed as follows:</p>
+<p><span class="math display">\[
+\text{Precision} = \frac{\text{Number of emails correctly classified as spam}}{\text{Total number of emails classified as spam}}
+\]</span></p>
+<p>Rephrasing this expression in confusion matrix jargon:</p>
+<p><span class="math display">\[
+\text{Precision} = \frac{\text{True Positive}}{\text{True Positive} + \text{False Positive}}
+\]</span></p>
+<p>Looking at the example below:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Observation</th>
+<th style="text-align: center;">Model A</th>
+<th style="text-align: center;">Model B</th>
+<th style="text-align: center;">Truth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">5</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">6</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">7</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">8</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>the precision of Model A is:</p>
+<p><span class="math display">\[
+\text{Precision}_\text{Model A} = \frac{3}{3 + 0} = 100\%
+\]</span></p>
+<div id="exr-prec-b" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 25.5</strong></span> Calculate the precision of Model B, show that it is approximately 67%.</p>
+</div>
+</section>
+<section id="revisiting-accuracy" class="level3" data-number="25.3.4">
+<h3 data-number="25.3.4" class="anchored" data-anchor-id="revisiting-accuracy"><span class="header-section-number">25.3.4</span> Revisiting Accuracy</h3>
+<p>Accuracy, the first error metric explored in this chapter, can also be calculated with confusion matrix terms.</p>
+<p>As a reminder, accuracy is calculated as follows: <span class="math display">\[
+\text{Accuracy} = \frac{\text{Number of observations correctly predicted}}{\text{Total observation count}}
+\]</span></p>
+<p>Using the language of True/False Positive/Negative, it can be computed with the following formula: <span class="math display">\[
+\text{Accuracy} = \frac{\text{True Positive} + \text{True Negative}}{\text{Observation Count}} =
+{}\frac{\text{TP} + \text{TN}}{\text{TP} + \text{FP} + \text{TN} + \text{FN}}
+\]</span></p>
+<p>This section described accuracy, recall, precision and the confusion matrix. It is now time to apply them to model selection; to choose the best performing model for a given task.</p>
+</section>
+</section>
+<section id="practical-model-selection" class="level2" data-number="25.4">
+<h2 data-number="25.4" class="anchored" data-anchor-id="practical-model-selection"><span class="header-section-number">25.4</span> Practical Model Selection</h2>
+<p>After having built two different machine learning tumour diagnosis models (A and B), you get the following confusion matrices:</p>
+<p>Model A</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted Malignant</th>
+<th style="text-align: center;">Predicted Benign</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual Malignant</td>
+<td style="text-align: center;">40</td>
+<td style="text-align: center;">10</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual Benign</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">40</td>
+</tr>
+</tbody>
+</table>
+<p>Model B</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted Malignant</th>
+<th style="text-align: center;">Predicted Benign</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual Malignant</td>
+<td style="text-align: center;">45</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual Benign</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">45</td>
+</tr>
+</tbody>
+</table>
+<p>Which model would you pick?</p>
+<p>If you picked B, that is correct. Why did you choose it? B seems to make fewer errors and have a higher accuracy.</p>
+<div id="exr-mod-cho" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 25.6</strong></span> If you have not done so already, compute the accuracy, precision and recall of both models.</p>
+</div>
+<p>Making this decision more complex, which of the following two models would you pick for a tumour diagnosis system?</p>
+<p>Model A</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted Malignant</th>
+<th style="text-align: center;">Predicted Benign</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual Malignant</td>
+<td style="text-align: center;">48</td>
+<td style="text-align: center;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual Benign</td>
+<td style="text-align: center;">18</td>
+<td style="text-align: center;">32</td>
+</tr>
+</tbody>
+</table>
+<p>Model B</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted Malignant</th>
+<th style="text-align: center;">Predicted Benign</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual Malignant</td>
+<td style="text-align: center;">50</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual Benign</td>
+<td style="text-align: center;">20</td>
+<td style="text-align: center;">30</td>
+</tr>
+</tbody>
+</table>
+<p>If you picked B, that is correct again. Why did you choose Model B? In this case, Model B has the same accuracy and the highest recall. In the case of tumour diagnosis, this is probably the most important metric to look at. Model B did not predict a single malignant tumour as “benign”.</p>
+<p>Would you pick a different model for spam detection? Probably, as precision becomes more important then. You do not want legitimate emails to end up in your spam folder.</p>
+<div id="exr-mod-cho-2" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 25.7</strong></span> Calculate recall and precision for Models A and B.</p>
+</div>
+</section>
+<section id="probabilities-and-thresholds" class="level2" data-number="25.5">
+<h2 data-number="25.5" class="anchored" data-anchor-id="probabilities-and-thresholds"><span class="header-section-number">25.5</span> Probabilities and Thresholds</h2>
+<p>For the sake of simplicity, this chapter has only considered binary predictions: either malignant or benign, either spam or non-spam.</p>
+<p>As we have seen in the <a href="../chapters/log-reg-formula.html" target="_blank">logistic regression chapter</a>, classification models output predicted probabilities. Instead of simply predicting an observation as “malignant” or “benign”, the model outputs a predicted probability of malignancy.</p>
+<p>To convert these probabilities to a binary label, a threshold of 0.5 is generally used. Any predicted probability beyond this threshold would be classified as “malignant”, otherwise, it would be classified as “benign”. For example, a predicted probability of 48% would be classified as “benign”, while a predicted probability of 51% as “malignant”.</p>
+<p>The threshold can be any number between 0 and 1. The lower the threshold, the higher the number of positives. In the example of tumour diagnosis, this would mean a higher number of observations predicted as “malignant”. On the other hand, a higher threshold would lead to fewer positives. In the example of spam detection, this would lead to fewer emails classified as “spam”.</p>
+<p>Let us show this with an example:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 23%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Obs.</th>
+<th style="text-align: center;">Predicted Probability</th>
+<th style="text-align: center;">Threshold 0.3</th>
+<th style="text-align: center;">Threshold 0.5</th>
+<th style="text-align: center;">Threshold 0.7</th>
+<th style="text-align: center;">Ground Truth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0.6</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">0.75</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">0.2</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">0.8</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">0.4</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">0.1</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Which translates to the following confusion matrices:</p>
+<p>Threshold 0.3</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted <span class="math inline">\(\times\)</span></th>
+<th style="text-align: center;">Predicted <span class="math inline">\(\circ\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual <span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual <span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+</tr>
+</tbody>
+</table>
+<p>Threshold 0.5</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted <span class="math inline">\(\times\)</span></th>
+<th style="text-align: center;">Predicted <span class="math inline">\(\circ\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual <span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual <span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">3</td>
+</tr>
+</tbody>
+</table>
+<p>Threshold 0.7</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Predicted <span class="math inline">\(\times\)</span></th>
+<th style="text-align: center;">Predicted <span class="math inline">\(\circ\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual <span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual <span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">3</td>
+</tr>
+</tbody>
+</table>
+<p>The following chart shows the evolution of the different metrics as the prediction threshold increases:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/scoring-classification/metrics.png" class="img-fluid figure-img"></p>
+<figcaption>Visualising recall and precision as the threshold increases</figcaption>
+</figure>
+</div>
+<p>We see that decreasing the prediction threshold to 0.3 has the following effects:</p>
+<ul>
+<li>Increase in recall: with more observations predicted as “malignant”, recall can only increase or stay constant</li>
+<li>Decrease in precision: with more observations predicted as “malignant”, the risk of misclassifying observations as “malignant” increases</li>
+</ul>
+<div id="exr-thresh" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 25.8</strong></span> Describe the effect of increasing the threshold on precision, recall and accuracy.</p>
+</div>
+<p>For tumour diagnosis, a lower threshold may make more sense. If an observation has a predicted probability of malignancy of 0.4, as a patient, I would still want further checks.</p>
+<p>For spam filtering, a higher threshold could be preferred, to reduce the risk of a legitimate email being filtered out. You could filter out results only when they have a predicted probability of 0.8 or 0.9.</p>
+<p>This example illustrates the precision/recall trade-off. Setting a higher threshold will increase precision and reduce recall. Setting a lower threshold will reduce precision and increase recall.</p>
+<p>This trade-off is for a single model. The better the probabilities generated by the model, the higher the precision and recall will be for a given threshold. The topic of probability evaluation will be explained further in the calibration chapter.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Combining Precision and Recall
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The F1 score is a metric that combines precision and recall into a single number. It is calculated as:</p>
+<p><span class="math display">\[
+\text{F1} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}
+\]</span></p>
+<p>The F1 score ranges from 0 to 1, where 1 indicates perfect precision and recall. It is the harmonic mean of the two, giving equal weight to both metrics. A high F1 score means that the model has both high precision and high recall.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="final-thoughts" class="level2" data-number="25.6">
+<h2 data-number="25.6" class="anchored" data-anchor-id="final-thoughts"><span class="header-section-number">25.6</span> Final Thoughts</h2>
+<p>This chapter has shown how to evaluate the scoring of a binary classification model. There are three steps to this process:</p>
+<ol type="1">
+<li>Set aside a share of the training data as a test set</li>
+<li>Using the trained model, generate predictions on this test set</li>
+<li>Calculate performance metrics such as accuracy, recall, and precision</li>
+</ol>
+<p>It is important to remember that there is no optimal performance metric. The best metric for a problem depends on the consequences of model error on the real world.</p>
+<p>The <a href="../chapters/calibrating-classification.html#calibrating-classification-models" target="_blank">next chapter</a> will explore how to evaluate the quality of a model’s predicted probabilities, also called the model’s calibration.</p>
+</section>
+<section id="solutions" class="level2" data-number="25.7">
+<h2 data-number="25.7" class="anchored" data-anchor-id="solutions"><span class="header-section-number">25.7</span> Solutions</h2>
+<div id="sol-acc" class="proof solution">
+<p><span class="proof-title"><em>Solution 25.1</em>. </span><a href="#exr-acc" class="quarto-xref">Exercise&nbsp;<span>25.1</span></a></p>
+<p><span class="math inline">\(\text{Accuracy of Model B} = \frac{4}{5} = 80\%\)</span></p>
+</div>
+<div id="sol-acc-ab" class="proof solution">
+<p><span class="proof-title"><em>Solution 25.2</em>. </span><a href="#exr-acc-ab" class="quarto-xref">Exercise&nbsp;<span>25.2</span></a></p>
+<p>Model A: Correct on observations 1, 2, 3, 4, 6, 7, 8 (7 out of 8). Incorrect on 5.</p>
+<p>Model B: Correct on 1, 2, 5, 6, 7, 8 (6 out of 8). Incorrect on 3 and 4.</p>
+<p><span class="math inline">\(\text{Accuracy of Model A} = \frac{7}{8} = 87.5\%\)</span></p>
+<p><span class="math inline">\(\text{Accuracy of Model B} = \frac{6}{8} = 75\%\)</span></p>
+</div>
+<div id="sol-recall-a" class="proof solution">
+<p><span class="proof-title"><em>Solution 25.3</em>. </span><a href="#exr-recall-a" class="quarto-xref">Exercise&nbsp;<span>25.4</span></a></p>
+<p>Model A: Out of 4 malignant tumours (observations 5, 6, 7, 8), Model A caught 3 (6, 7, 8), True Positives. Missed 5, a False Negative.</p>
+<p><span class="math inline">\(\text{Recall}_{\text{Model A}} = \frac{3}{3 + 1} = 75\%\)</span></p>
+</div>
+<div id="sol-prec-b" class="proof solution">
+<p><span class="proof-title"><em>Solution 25.4</em>. </span><a href="#exr-prec-b" class="quarto-xref">Exercise&nbsp;<span>25.5</span></a></p>
+<p><span class="math display">\[
+\text{Precision}_\text{Model B} = \frac{4}{4 + 2} = \frac{4}{6} \approx 67\%
+\]</span></p>
+</div>
+<div id="sol-mod-cho" class="proof solution">
+<p><span class="proof-title"><em>Solution 25.5</em>. </span><a href="#exr-mod-cho" class="quarto-xref">Exercise&nbsp;<span>25.6</span></a></p>
+<p>For Model A:</p>
+<ul>
+<li>TP = 40</li>
+<li>TN = 40</li>
+<li>FP = 10</li>
+<li>FN = 10</li>
+</ul>
+<p><span class="math inline">\(\text{Accuracy} = \frac{40 + 40}{100} = 80\%\)</span></p>
+<p><span class="math inline">\(\text{Precision} = \frac{40}{40 + 10} = \frac{40}{50} = 80\%\)</span></p>
+<p><span class="math inline">\(\text{Recall} = \frac{40}{40 + 10} = \frac{40}{50} = 80\%\)</span></p>
+<p>For Model B:</p>
+<ul>
+<li>TP = 45</li>
+<li>TN = 45</li>
+<li>FP = 5</li>
+<li>FN = 5</li>
+</ul>
+<p><span class="math inline">\(\text{Accuracy} = \frac{45 + 45}{100} = 90\%\)</span></p>
+<p><span class="math inline">\(\text{Precision} = \frac{45}{45 + 5} = \frac{45}{50} = 90\%\)</span></p>
+<p><span class="math inline">\(\text{Recall} = \frac{45}{45 + 5} = \frac{45}{50} = 90\%\)</span></p>
+</div>
+<div id="sol-mod-cho-2" class="proof solution">
+<p><span class="proof-title"><em>Solution 25.6</em>. </span><a href="#exr-mod-cho-2" class="quarto-xref">Exercise&nbsp;<span>25.7</span></a></p>
+<p>For Model A:</p>
+<ul>
+<li>TP = 48</li>
+<li>TN = 32</li>
+<li>FP = 18</li>
+<li>FN = 2</li>
+</ul>
+<p><span class="math inline">\(\text{Precision} = \frac{48}{48 + 18} = \frac{48}{66} \approx 73\%\)</span></p>
+<p><span class="math inline">\(\text{Recall} = \frac{48}{48 + 2} = \frac{48}{50} = 96\%\)</span></p>
+<p>For Model B:</p>
+<ul>
+<li>TP = 50</li>
+<li>TN = 30</li>
+<li>FP = 20</li>
+<li>FN = 0</li>
+</ul>
+<p><span class="math inline">\(\text{Precision} = \frac{50}{50 + 20} = \frac{50}{70} \approx 71\%\)</span></p>
+<p><span class="math inline">\(\text{Recall} = \frac{50}{50 + 0} = \frac{50}{50} = 100\%\)</span></p>
+</div>
+<div id="sol-thresh" class="proof solution">
+<p><span class="proof-title"><em>Solution 25.7</em>. </span><a href="#exr-thresh" class="quarto-xref">Exercise&nbsp;<span>25.8</span></a></p>
+<p>Increasing the threshold:</p>
+<ul>
+<li>Precision increases (or stays constant): fewer observations are predicted as positive, so only the most confident predictions remain, reducing false positives</li>
+<li>Recall decreases (or stays constant): with a higher bar for a positive prediction, the model is more likely to miss actual positive cases</li>
+<li>Accuracy: the effect on accuracy depends on the data; it may increase or decrease depending on the balance between gains in precision and losses in recall</li>
+</ul>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/log-reg-formula.html" class="pagination-link" aria-label="The Logistic Regression Formula">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">The Logistic Regression Formula</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/calibrating-classification.html" class="pagination-link" aria-label="Calibrating Classification Models">
+        <span class="nav-page-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Calibrating Classification Models</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

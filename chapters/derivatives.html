@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>8&nbsp; Derivatives – Linear Regression with Gradient Descent: Mathematical Foundations of AI</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/minimising-functions.html" rel="next">
+<link href="../chapters/fitting-linear-reg.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5ccb035bea26c1e21f80f44cf7c27909.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/derivatives.html">Derivatives and Gradient Descent</a></li><li class="breadcrumb-item"><a href="../chapters/derivatives.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Derivatives</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Linear Regression with Gradient Descent: Mathematical Foundations of AI</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../epigraph.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Epigraph</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Solar Panels and Ice Creams</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Representing Linear Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/data-space.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Representing Data as Points in Space</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Functions</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Measuring Regression Quality</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/measuring-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Evaluating Regression Quality</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/computing-error-sigma.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Computing Errors with Sigma Notation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-linear-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Fitting a Linear Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Derivatives and Gradient Descent</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/derivatives.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Derivatives</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/minimising-functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Minimising a Function with Derivatives</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/chain-rule.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">The Chain Rule</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-gradient-descent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Fitting a Linear Regression with Gradient Descent</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Multiple Parameters</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/function-multiple-inputs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Functions with Multiple Inputs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/intro-linear-alg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">First Steps in Linear Algebra</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/gradient-vector.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Gradient Vector</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/gradient-desc-multiple.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Gradient Descent for Multiple Inputs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-multiple-params.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Fitting the Slope and Intercept</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Multiple Linear Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-lin-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Multiple Linear Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/lin-alg-continued.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Linear Algebra Continued</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/multiple-lin-reg-lin-alg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Representing Linear Regression with Linear Algebra</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-mult-lin-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Fitting a Multiple Linear Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Using Linear Regression in the Real World</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/eval-oos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Estimating Linear Regression Performance</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/interpretation-coeffs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Interpreting Linear Regression Coefficients</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Classification with Logistic Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/classification-with-log-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">The Classification Problem</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/log-reg-formula.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">The Logistic Regression Formula</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Evaluating Classification Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/scoring-classification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Evaluating Classification Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/calibrating-classification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Calibrating Classification Models</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Fitting a Logistic Regression</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/fitting-log-reg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Fitting a Logistic Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="true">
+ <span class="menu-text">Conclusion</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/conclusion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Conclusion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/acknowledgements.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Acknowledgements</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/appendix-ce-gradient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Appendix: Deriving the Cross-Entropy Gradient</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-slope-of-a-line" id="toc-the-slope-of-a-line" class="nav-link active" data-scroll-target="#the-slope-of-a-line"><span class="header-section-number">8.1</span> The Slope of a Line</a></li>
+  <li><a href="#curves-have-changing-slopes" id="toc-curves-have-changing-slopes" class="nav-link" data-scroll-target="#curves-have-changing-slopes"><span class="header-section-number">8.2</span> Curves Have Changing Slopes</a></li>
+  <li><a href="#the-derivative" id="toc-the-derivative" class="nav-link" data-scroll-target="#the-derivative"><span class="header-section-number">8.3</span> The Derivative</a></li>
+  <li><a href="#positive-negative-and-zero-slopes" id="toc-positive-negative-and-zero-slopes" class="nav-link" data-scroll-target="#positive-negative-and-zero-slopes"><span class="header-section-number">8.4</span> Positive, Negative, and Zero Slopes</a></li>
+  <li><a href="#a-few-derivatives" id="toc-a-few-derivatives" class="nav-link" data-scroll-target="#a-few-derivatives"><span class="header-section-number">8.5</span> A Few Derivatives</a></li>
+  <li><a href="#derivative-of-a-sum" id="toc-derivative-of-a-sum" class="nav-link" data-scroll-target="#derivative-of-a-sum"><span class="header-section-number">8.6</span> Derivative of a Sum</a></li>
+  <li><a href="#final-thoughts" id="toc-final-thoughts" class="nav-link" data-scroll-target="#final-thoughts"><span class="header-section-number">8.7</span> Final Thoughts</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions"><span class="header-section-number">8.8</span> Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/derivatives.html">Derivatives and Gradient Descent</a></li><li class="breadcrumb-item"><a href="../chapters/derivatives.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Derivatives</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Derivatives</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>In the last chapter, we saw how the mean squared error changed with regards to the slope of a linear regression. Learning is the process of finding the parameters (here the slope) that achieve the lowest prediction error.</p>
+<p>But to adjust the slope, we need to know: in which direction should we change it? Should we make the coefficient bigger or smaller? By how much?</p>
+<p>To answer these questions, we need to measure how the output of a function changes when we change its input. This is the idea behind the derivative.</p>
+<section id="the-slope-of-a-line" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="the-slope-of-a-line"><span class="header-section-number">8.1</span> The Slope of a Line</h2>
+<p>Consider the ice cream sales function from a previous chapter:</p>
+<p><span class="math display">\[
+f(x) = 10 + 2x
+\]</span></p>
+<p>If the temperature <span class="math inline">\(x\)</span> increases by 1 degree, the predicted sales <span class="math inline">\(f(x)\)</span> increase by 2. Always. That is what the slope of 2 means, for every step to the right, the output goes up by 2.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(x\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(f(x)\)</span></th>
+<th style="text-align: center;">Change in <span class="math inline">\(f(x)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">12</td>
+<td style="text-align: center;">+2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">14</td>
+<td style="text-align: center;">+2</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">16</td>
+<td style="text-align: center;">+2</td>
+</tr>
+</tbody>
+</table>
+<p>The slope is constant, it is the same everywhere. This is what makes lines simple: their rate of change never varies.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/derivatives/tangent_lines.png" class="img-fluid figure-img"></p>
+<figcaption>Left: a linear function has a constant slope. Right: a curve has a slope that changes at every point</figcaption>
+</figure>
+</div>
+</section>
+<section id="curves-have-changing-slopes" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="curves-have-changing-slopes"><span class="header-section-number">8.2</span> Curves Have Changing Slopes</h2>
+<p>Let’s focus on the more interesting function:</p>
+<p><span class="math display">\[
+g(x) = x^2
+\]</span></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(x\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(g(x)\)</span></th>
+<th style="text-align: center;">Change in <span class="math inline">\(g(x)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">+1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">+3</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">9</td>
+<td style="text-align: center;">+5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">16</td>
+<td style="text-align: center;">+7</td>
+</tr>
+</tbody>
+</table>
+<p>The change is not constant. Near <span class="math inline">\(x = 0\)</span>, the function is relatively flat. Near <span class="math inline">\(x = 4\)</span>, it is steep. The slope depends on the value of <span class="math inline">\(x\)</span>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/derivatives/parabola.png" class="img-fluid figure-img"></p>
+<figcaption>The function g(x) = x²</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Parabolic Shapes
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The shape of the curve defined by <span class="math inline">\(g(x)\)</span> should remind you of the mean squared error for different slope values from the previous chapter. If so, well done, this is exactly where this chapter is going.</p>
+</div>
+</div>
+</div>
+<p>How do we compute the slope of a curve at a specific point?</p>
+</section>
+<section id="the-derivative" class="level2" data-number="8.3">
+<h2 data-number="8.3" class="anchored" data-anchor-id="the-derivative"><span class="header-section-number">8.3</span> The Derivative</h2>
+<p>The derivative of a function tells you its rate of change at every point. It answers the question: “If I nudge the input by a small amount, how much does the output change?”</p>
+<p>Let’s start with something we already know. Using <span class="math inline">\(f(x) = 10 + 2x\)</span>, the rate of change between <span class="math inline">\(x_1 = 2\)</span> and <span class="math inline">\(x_2 = 4\)</span> is:</p>
+<p><span class="math display">\[
+\frac{\text{Change in output}}{\text{Change in input}} = \frac{f(4) - f(2)}{4 - 2} = \frac{18 - 14}{2} = \frac{4}{2} = 2
+\]</span></p>
+<p>More generally, the rate of change can be written as:</p>
+<p><span class="math display">\[
+\frac{f(x + h) - f(x)}{h}
+\]</span></p>
+<p>Here, <span class="math inline">\(h\)</span> is the step size: the distance between the two points. The derivative is the rate of change between two points as the distance between them shrinks to 0.</p>
+<p>In other words the derivative is this rate of change as <span class="math inline">\(h\)</span> tends to 0:</p>
+<p><span class="math display">\[
+f'(x) = \lim_{h \to 0} \frac{f(x + h) - f(x)}{h}
+\]</span></p>
+<p>This reads: “the derivative of <span class="math inline">\(f\)</span> at <span class="math inline">\(x\)</span>, noted <span class="math inline">\(f'(x)\)</span>, is the limit of the rate of change as the step size <span class="math inline">\(h\)</span> approaches 0.”</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Alternative Notation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You may also see the derivative written as <span class="math inline">\(\frac{df}{dx}\)</span>, which reads “the change in <span class="math inline">\(f\)</span> per small change in <span class="math inline">\(x\)</span>.”</p>
+</div>
+</div>
+</div>
+<p>For a linear function, the derivative is simply the slope. This should intuitively make sense, as the rate of change of a linear function is constant.</p>
+<p>Let’s verify this with <span class="math inline">\(f(x) = 10 + 2x\)</span> at <span class="math inline">\(x = 2\)</span>, using smaller and smaller step sizes:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Step size <span class="math inline">\(h\)</span></th>
+<th style="text-align: center;">Rate of change <span class="math inline">\(\frac{f(2+h) - f(2)}{h}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{18 - 14}{2} = 2\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{16 - 14}{1} = 2\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">0.5</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{15 - 14}{0.5} = 2\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0.1</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{14.2 - 14}{0.1} = 2\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The rate of change is always <span class="math inline">\(2\)</span>, no matter the step size. The derivative of <span class="math inline">\(f\)</span> is <span class="math inline">\(2\)</span> for every value of <span class="math inline">\(x\)</span>.</p>
+<p>What about <span class="math inline">\(g(x) = x^2\)</span>? Let’s compute the rate of change at <span class="math inline">\(x = 2\)</span> with smaller and smaller steps:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Step size <span class="math inline">\(h\)</span></th>
+<th style="text-align: center;">Rate of change <span class="math inline">\(\frac{g(2+h) - g(2)}{h}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{16 - 4}{2} = 6\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{9 - 4}{1} = 5\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">0.5</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{6.25 - 4}{0.5} = 4.5\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0.1</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{4.41 - 4}{0.1} = 4.1\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>As <span class="math inline">\(h\)</span> gets smaller, the rate of change gets closer to 4. The derivative of <span class="math inline">\(g\)</span> at <span class="math inline">\(x = 2\)</span> is:</p>
+<p><span class="math display">\[
+g'(2) = 4
+\]</span></p>
+<p>We can also show this using limit calculus, by taking the rate of change formula and letting <span class="math inline">\(h\)</span> approach 0:</p>
+<p><span class="math display">\[
+\begin{aligned}
+g'(2) &amp;= \lim_{h \to 0} \frac{g(2 + h) - g(2)}{h} \\
+       &amp;= \lim_{h \to 0} \frac{(2 + h)^2 - 2^2}{h} \\
+       &amp;= \lim_{h \to 0} \frac{4 + 4h + h^2 - 4}{h} \\
+       &amp;= \lim_{h \to 0} \frac{4h + h^2}{h} \\
+       &amp;= \lim_{h \to 0} (4 + h) \\
+       &amp;= 4
+\end{aligned}
+\]</span></p>
+<p>This confirms the value the table was getting close to.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/derivatives/tangent_at_2.png" class="img-fluid figure-img"></p>
+<figcaption>Rate of change approaching the derivative at x = 2</figcaption>
+</figure>
+</div>
+<p>What about at <span class="math inline">\(x = 0\)</span>?</p>
+<p><span class="math display">\[
+g'(0) = \lim_{h \to 0} \frac{g(0 + h) - g(0)}{h} = \lim_{h \to 0} \frac{(0 + h)^2 - 0^2}{h} = \lim_{h \to 0} \frac{h^2}{h} = \lim_{h \to 0} h = 0
+\]</span></p>
+<p>The derivative is 0, meaning the function is flat at that point. Looking at the plot of <span class="math inline">\(g(x) = x^2\)</span>, this makes sense, the function does not change much around <span class="math inline">\(x = 0\)</span>.</p>
+<p>Instead of calculating <span class="math inline">\(g'(x)\)</span> for every value of <span class="math inline">\(x\)</span> individually, we can derive it for all values of <span class="math inline">\(x\)</span> at once:</p>
+<p><span class="math display">\[\begin{aligned}
+g'(x) &amp;= \lim_{h \to 0} \frac{g(x + h) - g(x)}{h} \\
+       &amp;= \lim_{h \to 0} \frac{(x + h)^2 - x^2}{h} \\
+       &amp;= \lim_{h \to 0} \frac{x^2 + 2xh + h^2 - x^2}{h} \\
+       &amp;= \lim_{h \to 0} \frac{2xh + h^2}{h} \\
+       &amp;= \lim_{h \to 0} \frac{h(2x + h)}{h} \\
+       &amp;= \lim_{h \to 0} (2x + h) \\
+       &amp;= 2x
+\end{aligned}\]</span></p>
+<p>Note the step where we factor <span class="math inline">\(h\)</span> out of the numerator: this allows us to simplify the fraction by dividing both numerator and denominator by <span class="math inline">\(h\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>On Limits and Calculus
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>If you find some parts of this calculation confusing, I would recommend reviewing the concept of limits and some basic calculus. The key idea is straightforward: as <span class="math inline">\(h\)</span> becomes infinitely small, any term containing <span class="math inline">\(h\)</span> vanishes.</p>
+</div>
+</div>
+</div>
+<p>This is a key result: for all values of <span class="math inline">\(x\)</span>, <span class="math inline">\(g'(x) = 2x\)</span>. Plotting both the function and its derivative confirms this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/derivatives/function_and_derivative.png" class="img-fluid figure-img"></p>
+<figcaption>g(x) and its derivative g’(x)</figcaption>
+</figure>
+</div>
+<p>Note that when <span class="math inline">\(g'(x)\)</span> is negative, <span class="math inline">\(g(x)\)</span> decreases; and the other way around.</p>
+</section>
+<section id="positive-negative-and-zero-slopes" class="level2" data-number="8.4">
+<h2 data-number="8.4" class="anchored" data-anchor-id="positive-negative-and-zero-slopes"><span class="header-section-number">8.4</span> Positive, Negative, and Zero Slopes</h2>
+<p>The sign of the derivative indicates the direction of change:</p>
+<ul>
+<li>Positive derivative (<span class="math inline">\(f'(x) &gt; 0\)</span>): The function is increasing. As <span class="math inline">\(x\)</span> gets bigger, <span class="math inline">\(f(x)\)</span> gets bigger too.</li>
+<li>Negative derivative (<span class="math inline">\(f'(x) &lt; 0\)</span>): The function is decreasing. As <span class="math inline">\(x\)</span> gets bigger, <span class="math inline">\(f(x)\)</span> gets smaller.</li>
+<li>Zero derivative (<span class="math inline">\(f'(x) = 0\)</span>): The function is flat at that point, neither increasing nor decreasing. This often corresponds to a minimum or maximum.</li>
+</ul>
+<p>The point where <span class="math inline">\(f'(x) = 0\)</span> is especially interesting. For the function <span class="math inline">\(g(x) = x^2\)</span>, the derivative is zero at <span class="math inline">\(x = 0\)</span>, which is exactly where the function reaches its minimum value. Can you see how this connects to finding the minimum of the MSE curve?</p>
+<p>One important note: a derivative of zero does not always indicate a minimum. It could also be a maximum. The function <span class="math inline">\(g(x) = x^2\)</span> has a minimum at <span class="math inline">\(x = 0\)</span>, while the function <span class="math inline">\(h(x) = -x^2\)</span> has a maximum at the same point. In both cases, the derivative is zero.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/derivatives/min_vs_max.png" class="img-fluid figure-img"></p>
+<figcaption>A derivative of zero can indicate either a minimum (left) or a maximum (right)</figcaption>
+</figure>
+</div>
+</section>
+<section id="a-few-derivatives" class="level2" data-number="8.5">
+<h2 data-number="8.5" class="anchored" data-anchor-id="a-few-derivatives"><span class="header-section-number">8.5</span> A Few Derivatives</h2>
+<p>In practice, we do not use the limit formula each time we need to calculate a derivative. There are shortcuts we can use.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Function <span class="math inline">\(f(x)\)</span></th>
+<th style="text-align: center;">Derivative <span class="math inline">\(f'(x)\)</span></th>
+<th style="text-align: center;">In words</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(c\)</span> (constant)</td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;">Constants do not change</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(ax\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(a\)</span></td>
+<td style="text-align: center;">Slope of <span class="math inline">\(a\)</span> everywhere</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(x^2\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(2x\)</span></td>
+<td style="text-align: center;">Slope depends on position</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(x^n\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(nx^{n-1}\)</span></td>
+<td style="text-align: center;">The power rule</td>
+</tr>
+</tbody>
+</table>
+<p>The general rule for powers: if <span class="math inline">\(f(x) = x^n\)</span>, then <span class="math inline">\(f'(x) = n \cdot x^{n-1}\)</span>. For instance, for <span class="math inline">\(g(x) = x^3\)</span>, <span class="math inline">\(g'(x) = 3x^2\)</span>.</p>
+<p>And for a constant multiplier: if <span class="math inline">\(f(x) = c \cdot x^n\)</span>, then <span class="math inline">\(f'(x) = c \cdot n \cdot x^{n-1}\)</span>. For example, for <span class="math inline">\(g(x) = 4x^3\)</span>, <span class="math inline">\(g'(x) = 4 \cdot 3x^2 = 12x^2\)</span>.</p>
+<p>Why is the derivative of a constant equal to 0?</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/derivatives/constant_function.png" class="img-fluid figure-img"></p>
+<figcaption>The constant function f(x) = 3</figcaption>
+</figure>
+</div>
+<p>As you can see above, constant functions never change. Their rate of change is the same for all values of <span class="math inline">\(x\)</span>: 0.</p>
+<p>One more derivative worth knowing: the derivative of <span class="math inline">\(\frac{1}{x}\)</span>. This can be rewritten as <span class="math inline">\(x^{-1}\)</span>, so using the power rule:</p>
+<p><span class="math display">\[
+f(x) = \frac{1}{x} = x^{-1} \implies f'(x) = -1 \cdot x^{-2} = -\frac{1}{x^2}
+\]</span></p>
+<p>The negative sign tells us that <span class="math inline">\(\frac{1}{x}\)</span> is a decreasing function (for positive <span class="math inline">\(x\)</span>): as <span class="math inline">\(x\)</span> gets bigger, <span class="math inline">\(\frac{1}{x}\)</span> gets smaller.</p>
+<div id="exr-derivatives-compute" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 8.1</strong></span> Using the rules above, compute the derivatives of the following functions:</p>
+<ol type="1">
+<li><span class="math inline">\(f(x) = 7x + 3\)</span></li>
+<li><span class="math inline">\(g(x) = x^3\)</span></li>
+<li><span class="math inline">\(h(x) = 4x^2\)</span></li>
+<li><span class="math inline">\(p(x) = \frac{5}{x}\)</span></li>
+</ol>
+</div>
+</section>
+<section id="derivative-of-a-sum" class="level2" data-number="8.6">
+<h2 data-number="8.6" class="anchored" data-anchor-id="derivative-of-a-sum"><span class="header-section-number">8.6</span> Derivative of a Sum</h2>
+<p>What would be the derivative of the following function?</p>
+<p><span class="math display">\[
+f(x) = x^2 + 2x + 1
+\]</span></p>
+<p>If you guessed <span class="math inline">\(f'(x) = 2x + 2\)</span>, well done, you are right!</p>
+<p>The derivative of a sum is the sum of the derivatives. The derivative of <span class="math inline">\(f(x)\)</span> is the derivative of <span class="math inline">\(x^2\)</span> + the derivative of <span class="math inline">\(2x\)</span> + the derivative of <span class="math inline">\(1\)</span>:</p>
+<p><span class="math display">\[
+f'(x) = 2x + 2 + 0 = 2x + 2
+\]</span></p>
+<p>We have already seen all of the individual derivatives, we now just have to put them together.</p>
+<div id="exr-derivative-sum" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 8.2</strong></span> Compute the derivative of the function <span class="math inline">\(f(x) = 3x^2 + 5x + 10\)</span>.</p>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Product and Quotient Rules
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>When two functions are multiplied together, the derivative is not simply the product of the individual derivatives. Instead, we use the product rule:</p>
+<p><span class="math display">\[
+\text{If } f(x) = u(x) \cdot v(x), \text{ then } f'(x) = u'(x) \cdot v(x) + u(x) \cdot v'(x)
+\]</span></p>
+<p>Let’s make this concrete. Consider:</p>
+<p><span class="math display">\[
+f(x) = x^2 \cdot (3x + 1)
+\]</span></p>
+<p>Here, <span class="math inline">\(u(x) = x^2\)</span> and <span class="math inline">\(v(x) = 3x + 1\)</span>. Using the product rule:</p>
+<p><span class="math display">\[\begin{aligned}
+f'(x) &amp;= u'(x) \cdot v(x) + u(x) \cdot v'(x) \\
+       &amp;= 2x \cdot (3x + 1) + x^2 \cdot 3 \\
+       &amp;= 6x^2 + 2x + 3x^2 \\
+       &amp;= 9x^2 + 2x
+\end{aligned}\]</span></p>
+<p>When two functions are divided, we use the quotient rule:</p>
+<p><span class="math display">\[
+\text{If } f(x) = \frac{u(x)}{v(x)}, \text{ then } f'(x) = \frac{u'(x) \cdot v(x) - u(x) \cdot v'(x)}{[v(x)]^2}
+\]</span></p>
+<p>As an example, consider:</p>
+<p><span class="math display">\[
+f(x) = \frac{x^2}{x + 1}
+\]</span></p>
+<p>Here, <span class="math inline">\(u(x) = x^2\)</span> and <span class="math inline">\(v(x) = x + 1\)</span>. Applying the quotient rule:</p>
+<p><span class="math display">\[\begin{aligned}
+f'(x) &amp;= \frac{2x \cdot (x + 1) - x^2 \cdot 1}{(x + 1)^2} \\
+       &amp;= \frac{2x^2 + 2x - x^2}{(x + 1)^2} \\
+       &amp;= \frac{x^2 + 2x}{(x + 1)^2}
+\end{aligned}\]</span></p>
+<div id="exr-product-quotient" class="exercise theorem">
+<p><span class="theorem-title"><strong>Exercise 8.3</strong></span> &nbsp;</p>
+<ol type="1">
+<li>Using the product rule, find the derivative of <span class="math inline">\(f(x) = x \cdot (x^2 + 2)\)</span>.</li>
+<li>Using the quotient rule, find the derivative of <span class="math inline">\(g(x) = \frac{3x}{x + 5}\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="final-thoughts" class="level2" data-number="8.7">
+<h2 data-number="8.7" class="anchored" data-anchor-id="final-thoughts"><span class="header-section-number">8.7</span> Final Thoughts</h2>
+<p>The derivative measures the rate of change of a function at any given point. For linear functions, the derivative is simply the slope. For non-linear functions like <span class="math inline">\(x^2\)</span>, the derivative changes depending on the value of <span class="math inline">\(x\)</span>.</p>
+<p>Derivatives tell us which direction the function is increasing. When <span class="math inline">\(f'(x) &gt; 0\)</span>, the function is going up. When <span class="math inline">\(f'(x) &lt; 0\)</span>, the function is going down. When <span class="math inline">\(f'(x) = 0\)</span>, the function is at a minimum or maximum.</p>
+<p>In the next chapter, we will see how derivatives can help us find the minimum of the MSE curve and find the optimal slope of a linear regression.</p>
+</section>
+<section id="solutions" class="level2" data-number="8.8">
+<h2 data-number="8.8" class="anchored" data-anchor-id="solutions"><span class="header-section-number">8.8</span> Solutions</h2>
+<div id="sol-derivatives-compute" class="proof solution">
+<p><span class="proof-title"><em>Solution 8.1</em>. </span><a href="#exr-derivatives-compute" class="quarto-xref">Exercise&nbsp;<span>8.1</span></a></p>
+<ol type="1">
+<li><p><span class="math inline">\(f(x) = 7x + 3\)</span></p>
+<p>Using the rule for linear functions: <span class="math inline">\(f'(x) = 7\)</span></p></li>
+<li><p><span class="math inline">\(g(x) = x^3\)</span></p>
+<p>Using the power rule (<span class="math inline">\(x^n \to nx^{n-1}\)</span>): <span class="math inline">\(g'(x) = 3x^2\)</span></p></li>
+<li><p><span class="math inline">\(h(x) = 4x^2\)</span></p>
+<p>The constant 4 stays, and the derivative of <span class="math inline">\(x^2\)</span> is <span class="math inline">\(2x\)</span>: <span class="math inline">\(h'(x) = 4 \times 2x = 8x\)</span></p></li>
+<li><p><span class="math inline">\(p(x) = \frac{5}{x} = 5x^{-1}\)</span></p>
+<p>Using the power rule: <span class="math inline">\(p'(x) = 5 \times (-1) \times x^{-2} = -\frac{5}{x^2}\)</span></p></li>
+</ol>
+</div>
+<div id="sol-derivative-sum" class="proof solution">
+<p><span class="proof-title"><em>Solution 8.2</em>. </span><a href="#exr-derivative-sum" class="quarto-xref">Exercise&nbsp;<span>8.2</span></a></p>
+<p><span class="math display">\[\begin{aligned}
+f(x) &amp;= 3x^2 + 5x + 10 \\
+f'(x) &amp;= 3 \times 2x + 5 + 0 \\
+      &amp;= 6x + 5
+\end{aligned}\]</span></p>
+<p>The derivative of <span class="math inline">\(3x^2\)</span> is <span class="math inline">\(6x\)</span>, the derivative of <span class="math inline">\(5x\)</span> is <span class="math inline">\(5\)</span>, and the derivative of <span class="math inline">\(10\)</span> is <span class="math inline">\(0\)</span>.</p>
+</div>
+<div id="sol-product-quotient" class="proof solution">
+<p><span class="proof-title"><em>Solution 8.3</em>. </span><a href="#exr-product-quotient" class="quarto-xref">Exercise&nbsp;<span>8.3</span></a></p>
+<ol type="1">
+<li><span class="math inline">\(f(x) = x \cdot (x^2 + 2)\)</span></li>
+</ol>
+<p>With <span class="math inline">\(u(x) = x\)</span> and <span class="math inline">\(v(x) = x^2 + 2\)</span>:</p>
+<p><span class="math display">\[\begin{aligned}
+f'(x) &amp;= u'(x) \cdot v(x) + u(x) \cdot v'(x) \\
+       &amp;= 1 \cdot (x^2 + 2) + x \cdot 2x \\
+       &amp;= x^2 + 2 + 2x^2 \\
+       &amp;= 3x^2 + 2
+\end{aligned}\]</span></p>
+<ol start="2" type="1">
+<li><span class="math inline">\(g(x) = \frac{3x}{x + 5}\)</span></li>
+</ol>
+<p>With <span class="math inline">\(u(x) = 3x\)</span> and <span class="math inline">\(v(x) = x + 5\)</span>:</p>
+<p><span class="math display">\[\begin{aligned}
+g'(x) &amp;= \frac{u'(x) \cdot v(x) - u(x) \cdot v'(x)}{[v(x)]^2} \\
+       &amp;= \frac{3 \cdot (x + 5) - 3x \cdot 1}{(x + 5)^2} \\
+       &amp;= \frac{3x + 15 - 3x}{(x + 5)^2} \\
+       &amp;= \frac{15}{(x + 5)^2}
+\end{aligned}\]</span></p>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/fitting-linear-reg.html" class="pagination-link" aria-label="Fitting a Linear Regression">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Fitting a Linear Regression</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/minimising-functions.html" class="pagination-link" aria-label="Minimising a Function with Derivatives">
+        <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Minimising a Function with Derivatives</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
