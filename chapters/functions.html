@@ -501,7 +501,7 @@ window.Quarto = {
 </div>
 <section id="functions-as-a-box" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="functions-as-a-box"><span class="header-section-number">4.1</span> Functions as a Box</h2>
-<p>They take an input, noted <span class="math inline">\(x\)</span>, and generate an output, noted <span class="math inline">\(f(x)\)</span>. From the previous chapter, what is <span class="math inline">\(x\)</span>? If you said “variable”, I am very proud of you. <span class="math inline">\(x\)</span> is a placeholder for any kind of mathematical object (e.g., number). Note that the name <span class="math inline">\(f\)</span> is a convention, other letters like <span class="math inline">\(g\)</span> or <span class="math inline">\(h\)</span> are also common.</p>
+<p>They take an input, noted <span class="math inline">\(x\)</span>, and generate an output, noted <span class="math inline">\(f(x)\)</span>. From the previous chapter, what is <span class="math inline">\(x\)</span>? If you said “variable”, I am very proud of you. <span class="math inline">\(x\)</span> is a placeholder for any kind of mathematical object (e.g., a number). Note that the name <span class="math inline">\(f\)</span> is a convention, other letters like <span class="math inline">\(g\)</span> or <span class="math inline">\(h\)</span> are also common.</p>
 <p>Functions are everywhere. A large language model, for example, can be seen as a function: it takes a piece of text as input and produces a continuation as output.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -513,7 +513,7 @@ window.Quarto = {
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../images/functions/function_box_icecream.png" class="img-fluid figure-img"></p>
-<figcaption>Function in ice cream context</figcaption>
+<figcaption>Function predicting ice cream sales</figcaption>
 </figure>
 </div>
 <p>This function can be a linear regression, like the one studied in the previous chapter:</p>
@@ -542,7 +542,7 @@ f(5) = 10 + 2 \times 5 = 20
 <p><span class="math display">\[
 f(x) = 10 + 2 \times x
 \]</span></p>
-<p>The function above maps the temperature in degrees Celsius to the ice cream sales. It maps one number to another. But does it map any number to any other numbers?</p>
+<p>The function above maps the temperature in degrees Celsius to ice cream sales. It maps one number to another. But does it map any number to any other number?</p>
 <p>As mentioned in the previous chapter, temperatures in degrees Celsius (on earth, at the time of writing) can only take a value between −273 and 60. So <span class="math inline">\(x\)</span> can be any decimal number between these two values. This is called the domain of the function: the set of possible input values.</p>
 <p>On the other side, <span class="math inline">\(f(x)\)</span> cannot be negative, as it is impossible to sell −2 ice creams. <span class="math inline">\(f(x)\)</span> must also be an integer, as it is not possible to sell 20.3 ice creams. So <span class="math inline">\(f(x)\)</span> must be a positive integer. This is called the range of the function: the set of possible output values.</p>
 <p>A function can then be thought of as the map between the set of possible input values and the set of possible output values.</p>
@@ -587,7 +587,7 @@ f(x) = 10 + 2 \times x
 f(x) = 10 + 2x
 \]</span></p>
 <p>First, <span class="math inline">\(f(x)\)</span> is negative for any <span class="math inline">\(x &lt; -5\)</span>. For a temperature of -10 degrees Celsius, the predicted sales would be negative.</p>
-<p>For ease of reading, we will happily ignore these technicalities. A more rigorous version of this function would only predict positive numbers, but that would complicate our notation unnecessarily.</p>
+<p>For ease of reading, we will happily ignore these technicalities. A more rigorous version of this function would complicate our notation unnecessarily.</p>
 </div>
 </div>
 </div>

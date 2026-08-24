@@ -519,9 +519,9 @@ window.Quarto = {
 </div>
 <p>Since there are no customers at 0 degrees, the intercept is 0. The prediction model becomes:</p>
 <p><span class="math display">\[
-\text{Ice Cream Sales} = \text{slope} \times \text{temperature} (+ 0)
+\text{Ice Cream Sales} = \text{slope} \times \text{temperature}
 \]</span></p>
-<p>The question now is, how do we find the slope that minimises the prediction error of the model?</p>
+<p>The question now is: how do we find the slope that minimises the prediction error of the model?</p>
 </section>
 <section id="the-mse-as-a-function-of-the-slope" class="level2" data-number="11.2">
 <h2 data-number="11.2" class="anchored" data-anchor-id="the-mse-as-a-function-of-the-slope"><span class="header-section-number">11.2</span> The MSE as a Function of the Slope</h2>
@@ -538,7 +538,7 @@ window.Quarto = {
 </section>
 <section id="differentiating-the-mse" class="level2" data-number="11.3">
 <h2 data-number="11.3" class="anchored" data-anchor-id="differentiating-the-mse"><span class="header-section-number">11.3</span> Differentiating the MSE</h2>
-<p>We can now compute the derivative of the MSE with regards to the slope, starting from:</p>
+<p>Starting from:</p>
 <p><span class="math display">\[
 \text{MSE}(\text{slope}) = \frac{1}{n} \sum_{i=1}^{n} (\text{slope} \times x_i - y_i)^2
 \]</span></p>
@@ -547,7 +547,7 @@ window.Quarto = {
 <p><span class="math display">\[
 (\text{slope} \times x_i - y_i)^2
 \]</span></p>
-<p>This is the type of complex expressions we studied in the chain rule chapter. You now know three ways to differentiate the MSE with regards to the slope, the chain rule, expanding the squared term, or using the product rule.</p>
+<p>This is the type of complex expressions we studied in the chain rule chapter.</p>
 <div id="exr-mse-expand" class="exercise theorem">
 <p><span class="theorem-title"><strong>Exercise 11.1</strong></span> Differentiate <span class="math inline">\((\text{slope} \times x_i - y_i)^2\)</span> with regards to <span class="math inline">\(\text{slope}\)</span> by expanding the squared term.</p>
 <p>Hint: expand using <span class="math inline">\((a - b)^2 = a^2 - 2ab + b^2\)</span>, then differentiate each term with regards to <span class="math inline">\(\text{slope}\)</span>, treating <span class="math inline">\(x_i\)</span> and <span class="math inline">\(y_i\)</span> as constants.</p>
@@ -665,9 +665,9 @@ f(u) = u^2 \quad \text{and} \quad g(\text{slope}) = \text{slope} \times x_i - y_
 \text{slope}_{t+1} = \text{slope}_t - \text{learning rate} \times \frac{d \, \text{MSE}}{d \, \text{slope}}
 \]</span></p>
 <p><span class="math display">\[
-\text{slope}_1 = 5 - 0.001 \times (-2760) = 5 + 2.8 = 7.8
+\text{slope}_1 = 5 - 0.001 \times (-2760) = 5 + 2.76 = 7.76
 \]</span></p>
-<p>The slope increased from 5 to 7.8. This makes sense, the model was under-predicting (all errors were negative), so the slope needed to increase.</p>
+<p>The slope increased from 5 to 7.76. This makes sense, the model was under-predicting (all errors were negative), so the slope needed to increase.</p>
 <p><em>Step 4</em>: repeat until convergence, when <span class="math inline">\(\text{slope}_{t+1} \approx \text{slope}_t\)</span>.</p>
 <p>Continuing for a few more steps:</p>
 <table class="caption-top table">
@@ -682,33 +682,33 @@ f(u) = u^2 \quad \text{and} \quad g(\text{slope}) = \text{slope} \times x_i - y_
 <tbody>
 <tr class="odd">
 <td style="text-align: center;">1</td>
-<td style="text-align: center;">5.0</td>
+<td style="text-align: center;">5.00</td>
 <td style="text-align: center;"><span class="math inline">\(-2760.0\)</span></td>
-<td style="text-align: center;">7.8</td>
+<td style="text-align: center;">7.76</td>
 </tr>
 <tr class="even">
 <td style="text-align: center;">2</td>
-<td style="text-align: center;">7.8</td>
-<td style="text-align: center;"><span class="math inline">\(-1220.0\)</span></td>
-<td style="text-align: center;">9.0</td>
+<td style="text-align: center;">7.76</td>
+<td style="text-align: center;"><span class="math inline">\(-1242.0\)</span></td>
+<td style="text-align: center;">9.00</td>
 </tr>
 <tr class="odd">
 <td style="text-align: center;">3</td>
-<td style="text-align: center;">9.0</td>
+<td style="text-align: center;">9.00</td>
 <td style="text-align: center;"><span class="math inline">\(-560.0\)</span></td>
-<td style="text-align: center;">9.6</td>
+<td style="text-align: center;">9.56</td>
 </tr>
 <tr class="even">
 <td style="text-align: center;">4</td>
-<td style="text-align: center;">9.6</td>
-<td style="text-align: center;"><span class="math inline">\(-230.0\)</span></td>
-<td style="text-align: center;">9.8</td>
+<td style="text-align: center;">9.56</td>
+<td style="text-align: center;"><span class="math inline">\(-252.0\)</span></td>
+<td style="text-align: center;">9.81</td>
 </tr>
 <tr class="odd">
 <td style="text-align: center;">5</td>
-<td style="text-align: center;">9.8</td>
-<td style="text-align: center;"><span class="math inline">\(-120.0\)</span></td>
-<td style="text-align: center;">9.9</td>
+<td style="text-align: center;">9.81</td>
+<td style="text-align: center;"><span class="math inline">\(-114.5\)</span></td>
+<td style="text-align: center;">9.92</td>
 </tr>
 </tbody>
 </table>
@@ -718,9 +718,9 @@ f(u) = u^2 \quad \text{and} \quad g(\text{slope}) = \text{slope} \times x_i - y_
 <figcaption>Gradient descent converging to the optimal slope</figcaption>
 </figure>
 </div>
-<p>The slope is converging towards approximately <span class="math inline">\(10\)</span>. After enough iterations, the algorithm will settle on the slope that minimises the MSE.</p>
+<p>The slope is converging towards <span class="math inline">\(10\)</span>. After enough iterations, the algorithm will settle on the slope that minimises the MSE.</p>
 <div id="exr-gd-step" class="exercise theorem">
-<p><span class="theorem-title"><strong>Exercise 11.2</strong></span> Using the data and the derivative formula above, verify the computation for Step 2 (slope = 7.76). Compute all five values of <span class="math inline">\(2x_i(\hat{y}_i - y_i)\)</span> and show that the MSE derivative is approximately <span class="math inline">\(-1242\)</span>.</p>
+<p><span class="theorem-title"><strong>Exercise 11.2</strong></span> Using the data and the derivative formula above, verify the computation for Step 2 (slope = 7.76). Compute all five values of <span class="math inline">\(2x_i(\hat{y}_i - y_i)\)</span> and show that the MSE derivative is <span class="math inline">\(-1242\)</span>.</p>
 </div>
 </section>
 <section id="final-thoughts" class="level2" data-number="11.5">

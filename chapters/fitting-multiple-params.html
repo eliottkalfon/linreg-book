@@ -515,7 +515,7 @@ window.Quarto = {
 <p><span class="math display">\[
 \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)^2
 \]</span></p>
-<p>To minimise this function with gradient descent, we need to compute the gradient vector of the MSE, using the partial derivatives with regards to both the slope and the intercept:</p>
+<p>To minimise this function with gradient descent, we need to compute the gradient vector of the MSE. We do so using the partial derivatives with regards to both the slope and the intercept:</p>
 <p><span class="math display">\[
 \nabla \text{MSE} = \left( \frac{\partial \text{MSE}}{\partial \text{slope}}, \; \frac{\partial \text{MSE}}{\partial \text{intercept}} \right)
 \]</span></p>
@@ -537,7 +537,7 @@ window.Quarto = {
 </section>
 <section id="partial-derivative-of-the-mse-with-regards-to-the-intercept" class="level2" data-number="16.2">
 <h2 data-number="16.2" class="anchored" data-anchor-id="partial-derivative-of-the-mse-with-regards-to-the-intercept"><span class="header-section-number">16.2</span> Partial Derivative of the MSE with Regards to the Intercept</h2>
-<p>The idea is very much the same as finding the partial derivative with regards to the slope. It also uses the chain rule. Write the inside of the summation:</p>
+<p>The idea is very much the same as finding the partial derivative with regards to the slope. It also uses the chain rule. We write the inside of the summation:</p>
 <p><span class="math display">\[
 (\text{slope} \times x_i + \text{intercept} - y_i)^2
 \]</span></p>

@@ -499,7 +499,12 @@ window.Quarto = {
 <ol type="1">
 <li>Start with a random guess: e.g., <span class="math inline">\(x_0 = 2\)</span></li>
 <li>Compute the derivative of the function at this point: <span class="math inline">\(f'(x_0)\)</span></li>
-<li>Update the value of <span class="math inline">\(x\)</span> by a small step opposite to <span class="math inline">\(f'(x)\)</span>: <span class="math inline">\(x_{t+1} = x_t - \text{learning rate} \times f'(x_t)\)</span></li>
+<li>Update the value of <span class="math inline">\(x\)</span> by a small step opposite to <span class="math inline">\(f'(x)\)</span>:</li>
+</ol>
+<p><span class="math display">\[
+x_{t+1} = x_t - \text{learning rate} \times f'(x_t)
+\]</span></p>
+<ol start="4" type="1">
 <li>Continue until the algorithm converges and there are no more changes to <span class="math inline">\(x\)</span>: <span class="math inline">\(x_{t+1} \approx x_t\)</span></li>
 </ol>
 <p>This can be adapted to functions with multiple inputs by using the gradient vector instead of the derivative. As a reminder, the gradient vector is the ordered list of partial derivatives of a function with multiple inputs, introduced in a <a href="../chapters/gradient-vector.html">previous chapter</a>.</p>
@@ -515,14 +520,16 @@ f(x_1, x_2) = x_1^2 + 2x_2^2
 <ol type="1">
 <li>Start with a random guess: e.g., <span class="math inline">\(\mathbf{x}_0 = (2, 2)\)</span></li>
 <li>Compute the gradient of the function at this point: <span class="math inline">\(\nabla f(\mathbf{x}_0)\)</span></li>
-<li>Update <span class="math inline">\(\mathbf{x}\)</span> by a small step opposite to the gradient: <span class="math inline">\(\mathbf{x}_{t+1} = \mathbf{x}_t - \text{learning rate} \times \nabla f(\mathbf{x}_t)\)</span></li>
+<li>Update <span class="math inline">\(\mathbf{x}\)</span> by a small step opposite to the gradient: <span class="math display">\[
+\mathbf{x}_{t+1} = \mathbf{x}_t - \text{learning rate} \times \nabla f(\mathbf{x}_t)
+\]</span></li>
 <li>Continue until the algorithm converges: <span class="math inline">\(\mathbf{x}_{t+1} \approx \mathbf{x}_t\)</span></li>
 </ol>
 <p>This is the general formulation. Notice that with the gradient vector, we can easily extend the algorithm to handle collections of inputs. Let’s try it step by step.</p>
 </section>
 <section id="example" class="level2" data-number="15.2">
 <h2 data-number="15.2" class="anchored" data-anchor-id="example"><span class="header-section-number">15.2</span> Example</h2>
-<p>Start with a random guess <span class="math inline">\(\mathbf{x}_0 = (2, 2)\)</span>. This vector is a list of inputs: <span class="math inline">\(x_1 = 2\)</span> and <span class="math inline">\(x_2 = 2\)</span>. This notation allows us to generalise to any number of inputs. As a reminder, <span class="math inline">\(f\)</span> is:</p>
+<p>Start with a random guess <span class="math inline">\(\mathbf{x}_0 = (2, 2)\)</span>. This vector is a list of inputs: <span class="math inline">\(x_1 = 2\)</span> and <span class="math inline">\(x_2 = 2\)</span>. As a reminder, <span class="math inline">\(f\)</span> is:</p>
 <p><span class="math display">\[
 f(x_1, x_2) = x_1^2 + 2x_2^2
 \]</span></p>
@@ -534,7 +541,8 @@ f(x_1, x_2) = x_1^2 + 2x_2^2
 <p><span class="math display">\[
 \nabla f(2, 2) = (2 \times 2, \; 4 \times 2) = (4, 8)
 \]</span></p>
-<p>Then, update <span class="math inline">\(\mathbf{x}\)</span> using the gradient descent update rule. This update involves two operations studied in the <a href="../chapters/intro-linear-alg.html">previous chapter</a>: scalar multiplication and vector subtraction. Using a learning rate of <span class="math inline">\(0.1\)</span>:</p>
+<p>Then, update <span class="math inline">\(\mathbf{x}\)</span> using the gradient descent update rule. This update involves two operations studied in the <a href="../chapters/intro-linear-alg.html">previous chapter</a>: scalar multiplication and vector subtraction.</p>
+<p>Using a learning rate of <span class="math inline">\(0.1\)</span>:</p>
 <p><span class="math display">\[
 \mathbf{x}_1 = \mathbf{x}_0 - 0.1 \times \nabla f(\mathbf{x}_0) = (2, 2) - 0.1 \times (4, 8) = (2 - 0.4, \; 2 - 0.8) = (1.6, 1.2)
 \]</span></p>

@@ -504,12 +504,16 @@ window.Quarto = {
 <figcaption>Prediction errors shown as vertical bars</figcaption>
 </figure>
 </div>
-<p>It is computed by summing the squared differences between predictions and actual data:</p>
+<p>We compute the MSE by summing the squared differences between predictions and actual data:</p>
 <p><span class="math display">\[
 \text{MSE} = \frac{(\hat{y}_1 - y_1)^2 + (\hat{y}_2 - y_2)^2 + \cdots + (\hat{y}_n - y_n)^2}{n} = \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)^2
 \]</span></p>
-<p>The above formula assumes that predictions are a simple list of numbers we need to iterate over. Can we do it all in one go with vectors?</p>
-<p>The predictions are stored in a vector <span class="math inline">\(\hat{\mathbf{y}}\)</span>. To compute the MSE, we would need another vector, noted <span class="math inline">\(\mathbf{y}\)</span>, containing the actual values.</p>
+<p>The above formula iterates over a list of numbers. Can we do it all in one go with vectors?</p>
+<p>The predictions are stored in a vector <span class="math inline">\(\hat{\mathbf{y}}\)</span>. As an example, a model predicting house prices in thousands of euros could output:</p>
+<p><span class="math display">\[
+\hat{\mathbf{y}} = \begin{pmatrix} \hat{y}_1 \\ \hat{y}_2 \\ \hat{y}_3 \\ \hat{y}_4 \end{pmatrix} = \begin{pmatrix} 340 \\ 250 \\ 120 \\ 410 \end{pmatrix}
+\]</span></p>
+<p>To compute the MSE, we would need another vector, noted <span class="math inline">\(\mathbf{y}\)</span>, containing the actual values.</p>
 <p>Let’s take the following simple data as an example:</p>
 <table class="caption-top table">
 <thead>
@@ -561,11 +565,11 @@ window.Quarto = {
 <p><span class="math display">\[
 \text{MSE} = \frac{1}{3} \times 3 = 1
 \]</span></p>
-<p>We can now compute the MSE using vectors. This is a first step towards fitting a multiple linear regression. The missing piece we need for gradient descent is computing the gradient of the MSE with regards to the coefficient vector <span class="math inline">\(\mathbf{w}\)</span>.</p>
+<p>We can now compute the MSE using vectors. This is a first step towards fitting a multiple linear regression. We now need to compute the gradient of the MSE with regards to the coefficient vector <span class="math inline">\(\mathbf{w}\)</span>.</p>
 </section>
 <section id="computing-the-gradient-of-the-mse" class="level2" data-number="20.2">
 <h2 data-number="20.2" class="anchored" data-anchor-id="computing-the-gradient-of-the-mse"><span class="header-section-number">20.2</span> Computing the gradient of the MSE</h2>
-<p>Similar to a simple linear regression, we need the coefficient vector <span class="math inline">\(\mathbf{w}\)</span> to appear in the MSE formula to compute the gradient:</p>
+<p>Like with a simple linear regression, we need the coefficient vector <span class="math inline">\(\mathbf{w}\)</span> to appear in the MSE formula to compute the gradient:</p>
 <p><span class="math display">\[
 \text{MSE} = \frac{1}{n} (\hat{\mathbf{y}} - \mathbf{y})^T (\hat{\mathbf{y}} - \mathbf{y})
 \]</span></p>
@@ -605,11 +609,22 @@ f'(\mathbf{u})=\frac{1}{n} \cdot 2\mathbf{u}
 <p><span class="math display">\[
 g(\mathbf{w}) = \mathbf{X}\mathbf{w} - \mathbf{y}
 \]</span></p>
-<p>follows the same logic as the scalar case: the derivative of <span class="math inline">\(xw\)</span> with respect to <span class="math inline">\(w\)</span> is <span class="math inline">\(x\)</span>. Consider a single observation with two features <span class="math inline">\(x_1, x_2\)</span> and two weights <span class="math inline">\(w_1, w_2\)</span>. The prediction is <span class="math inline">\(x_1 w_1 + x_2 w_2\)</span>. Its derivative with respect to <span class="math inline">\(w_1\)</span> is <span class="math inline">\(x_1\)</span>, and with respect to <span class="math inline">\(w_2\)</span> it is <span class="math inline">\(x_2\)</span>. The gradient is <span class="math inline">\([x_1, x_2]^T\)</span>, the features arranged as a column (just like the weights). Extending this to all observations and all weights gives <span class="math inline">\(\mathbf{X}^T\)</span>:</p>
+<p>follows the same logic as the scalar case. The derivative of <span class="math inline">\(xw\)</span> with respect to <span class="math inline">\(w\)</span> is <span class="math inline">\(x\)</span>. Consider a single observation with two features <span class="math inline">\(x_1, x_2\)</span> and two weights <span class="math inline">\(w_1, w_2\)</span>. The prediction is <span class="math inline">\(x_1 w_1 + x_2 w_2\)</span>. Its derivative with respect to <span class="math inline">\(w_1\)</span> is <span class="math inline">\(x_1\)</span>, and with respect to <span class="math inline">\(w_2\)</span> it is <span class="math inline">\(x_2\)</span>. The gradient is <span class="math inline">\([x_1, x_2]^T\)</span>, the features arranged as a column (just like the weights). Extending this to all observations and all weights gives <span class="math inline">\(\mathbf{X}^T\)</span>:</p>
 <p><span class="math display">\[
 \frac{dg}{d\mathbf{w}} = \mathbf{X}^T
 \]</span></p>
-<p>Why this is <span class="math inline">\(\mathbf{X}^T\)</span> and not <span class="math inline">\(\mathbf{X}\)</span> confused me for a while when I was studying this. If you are not convinced, the following note should help.</p>
+<p>Why this is <span class="math inline">\(\mathbf{X}^T\)</span> and not <span class="math inline">\(\mathbf{X}\)</span> confused me for a while when I was studying this. If you are still not convinced, the note at the end of this section should help.</p>
+<p>Putting it all together, we get:</p>
+<p><span class="math display">\[\begin{aligned}
+\frac{d\text{MSE}}{d\mathbf{w}} &amp;= \frac{df}{dg} \times \frac{dg}{d\mathbf{w}} \\
+&amp;= \mathbf{X}^T \times \frac{2}{n}(\mathbf{X}\mathbf{w} - \mathbf{y}) \\
+&amp;= \frac{2}{n} \mathbf{X}^T (\mathbf{X}\mathbf{w} - \mathbf{y})
+\end{aligned}\]</span></p>
+<p>Putting all of this together, we get the gradient of the MSE:</p>
+<p><span class="math display">\[
+\nabla \text{MSE}(\mathbf{w}) = \frac{2}{n} \mathbf{X}^T (\mathbf{X}\mathbf{w} - \mathbf{y})
+\]</span></p>
+<p>Remember that <span class="math inline">\(\mathbf{X}\)</span> is the feature matrix and <span class="math inline">\(\mathbf{X}\mathbf{w} - \mathbf{y}\)</span> is the vector of errors.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -641,17 +656,6 @@ g(\mathbf{w}) = \mathbf{X}\mathbf{w} - \mathbf{y}
 </div>
 </div>
 </div>
-<p>Putting it all together, we get:</p>
-<p><span class="math display">\[\begin{aligned}
-\frac{d\text{MSE}}{d\mathbf{w}} &amp;= \frac{df}{dg} \times \frac{dg}{d\mathbf{w}} \\
-&amp;= \mathbf{X}^T \times \frac{2}{n}(\mathbf{X}\mathbf{w} - \mathbf{y}) \\
-&amp;= \frac{2}{n} \mathbf{X}^T (\mathbf{X}\mathbf{w} - \mathbf{y})
-\end{aligned}\]</span></p>
-<p>Putting all of this together, we get the gradient of the MSE:</p>
-<p><span class="math display">\[
-\nabla \text{MSE}(\mathbf{w}) = \frac{2}{n} \mathbf{X}^T (\mathbf{X}\mathbf{w} - \mathbf{y})
-\]</span></p>
-<p>Remember that <span class="math inline">\(\mathbf{X}\)</span> is the feature matrix and <span class="math inline">\(\mathbf{X}\mathbf{w} - \mathbf{y}\)</span> is the vector of errors.</p>
 </section>
 <section id="example" class="level2" data-number="20.3">
 <h2 data-number="20.3" class="anchored" data-anchor-id="example"><span class="header-section-number">20.3</span> Example</h2>
@@ -698,6 +702,7 @@ g(\mathbf{w}) = \mathbf{X}\mathbf{w} - \mathbf{y}
 <p><span class="math display">\[
 \mathbf{X}\mathbf{w}_0 - \mathbf{y} = \begin{pmatrix} 8 \\ 10 \\ 12 \end{pmatrix} - \begin{pmatrix} 10 \\ 11 \\ 12 \end{pmatrix} = \begin{pmatrix} -2 \\ -1 \\ 0 \end{pmatrix}
 \]</span></p>
+<p>Note that the starting weights mostly under-predict the actual values.</p>
 <p>We now have all the elements to compute the gradient of the MSE for <span class="math inline">\(\mathbf{w}_0 = (2, 2)\)</span>:</p>
 <p><span class="math display">\[\begin{aligned}
 \nabla \text{MSE}(\mathbf{w}_0) &amp;= \frac{2}{n} \mathbf{X}^T (\mathbf{X}\mathbf{w}_0 - \mathbf{y}) \\
@@ -707,6 +712,7 @@ g(\mathbf{w}) = \mathbf{X}\mathbf{w} - \mathbf{y}
 &amp;= \begin{pmatrix} -2 \\ -6.7 \end{pmatrix}
 \end{aligned}\]</span></p>
 <p>Both the intercept and the slope need to increase; the gradient is negative, so stepping in the opposite direction means increasing.</p>
+<p>This makes sense considering the under-prediction mentioned above.</p>
 </section>
 <section id="using-gradient-descent-to-fit-the-coefficients" class="level2" data-number="20.4">
 <h2 data-number="20.4" class="anchored" data-anchor-id="using-gradient-descent-to-fit-the-coefficients"><span class="header-section-number">20.4</span> Using gradient descent to fit the coefficients</h2>
@@ -714,12 +720,9 @@ g(\mathbf{w}) = \mathbf{X}\mathbf{w} - \mathbf{y}
 <ol type="1">
 <li>Start with a random choice of <span class="math inline">\(\mathbf{w}_0 = (2, 2)\)</span></li>
 <li>Compute the gradient vector <span class="math inline">\(\nabla \text{MSE}(\mathbf{w})\)</span></li>
-<li>Update <span class="math inline">\(\mathbf{w}\)</span> with the gradient update rule, using <span class="math inline">\(0.1\)</span> as the learning rate:</li>
-</ol>
-<p><span class="math display">\[
+<li>Update <span class="math inline">\(\mathbf{w}\)</span> with the gradient update rule, using <span class="math inline">\(0.1\)</span> as the learning rate: <span class="math display">\[
 \mathbf{w}_{t+1} = \mathbf{w}_t - \text{learning rate} \times \nabla \text{MSE}(\mathbf{w}_t)
-\]</span></p>
-<ol start="4" type="1">
+\]</span></li>
 <li>Repeat until convergence: <span class="math inline">\(\mathbf{w}_{t+1} \approx \mathbf{w}_t\)</span></li>
 </ol>
 <p><em>Step 1</em></p>

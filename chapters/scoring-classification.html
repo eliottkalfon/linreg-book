@@ -760,7 +760,7 @@ window.Quarto = {
 <div id="exr-conf-fraud" class="exercise theorem">
 <p><span class="theorem-title"><strong>Exercise 25.3</strong></span> To test your understanding, try building a confusion matrix for a payment fraud detection model.</p>
 </div>
-<p>Now that we clearly understand the language of True/False Negative/Positive, let’s get back to measuring the performance of a machine learning model.</p>
+<p>Now that we clearly understand the language of True/False Negative/Positive, let’s get back to measuring the performance of a logistic regression model.</p>
 </section>
 <section id="recall" class="level3" data-number="25.3.2">
 <h3 data-number="25.3.2" class="anchored" data-anchor-id="recall"><span class="header-section-number">25.3.2</span> Recall</h3>
@@ -847,7 +847,7 @@ window.Quarto = {
 <section id="precision" class="level3" data-number="25.3.3">
 <h3 data-number="25.3.3" class="anchored" data-anchor-id="precision"><span class="header-section-number">25.3.3</span> Precision</h3>
 <p>In other scenarios, when the cost of a False Positive is high, we care for the precision of the model. In other words, we want to avoid False Positives; wrongly predicting the variable of interest.</p>
-<p>Building a spam detection algorithm, the objective is to classify incoming emails as either “spam” or “non-spam”. Every email classified as “spam” would be filtered out of the inbox. In line with the previous section, the positive case would be “spam”, as it is the case that would require action; filtering email out of the inbox.</p>
+<p>Building a spam detection algorithm, the objective is to classify incoming emails as either “spam” or “non-spam”. Every email classified as “spam” would be filtered out of the inbox.</p>
 <p>In spam filtering, False Positives can have serious negative consequences. Once, a recruiter’s email ended up in my spam folder. Without her reminder, I would have never worked at her company because of a spam filtering error.</p>
 <p>Precision answers the question: Out of all the observations predicted as positive, how many were True Positives, i.e., actually positive?</p>
 <p>For this reason, the most important metric here is precision: out of the messages classified as spam, how many were actually spam messages?</p>
@@ -943,7 +943,7 @@ window.Quarto = {
 </section>
 <section id="practical-model-selection" class="level2" data-number="25.4">
 <h2 data-number="25.4" class="anchored" data-anchor-id="practical-model-selection"><span class="header-section-number">25.4</span> Practical Model Selection</h2>
-<p>After having built two different machine learning tumour diagnosis models (A and B), you get the following confusion matrices:</p>
+<p>After having built two different logistic regression models for predicting tumour diagnosis (A and B), you get the following confusion matrices:</p>
 <p>Model A</p>
 <table class="caption-top table">
 <thead>
@@ -1072,11 +1072,11 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: center;">1</td>
-<td style="text-align: center;">0.6</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">0.8</td>
 <td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
 <td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
-<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
 <td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
 </tr>
 <tr class="even">
@@ -1088,25 +1088,25 @@ window.Quarto = {
 <td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
 </tr>
 <tr class="odd">
-<td style="text-align: center;">3</td>
-<td style="text-align: center;">0.2</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0.6</td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
 <td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
-<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
-<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
-<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
 </tr>
 <tr class="even">
-<td style="text-align: center;">4</td>
-<td style="text-align: center;">0.8</td>
-<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
-<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
-<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
-<td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
-</tr>
-<tr class="odd">
 <td style="text-align: center;">5</td>
 <td style="text-align: center;">0.4</td>
 <td style="text-align: center;"><span class="math inline">\(\times\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">0.2</td>
+<td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
 <td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
 <td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
 <td style="text-align: center;"><span class="math inline">\(\circ\)</span></td>
