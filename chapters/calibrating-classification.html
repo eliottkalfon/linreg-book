@@ -521,7 +521,7 @@ window.Quarto = {
 
 
 <p>The <a href="../chapters/scoring-classification.html" target="_blank">previous chapter</a> covered scoring metrics like accuracy, precision and recall. These metrics measure whether the model classifies observations into the right category. But they say little about the quality of the predicted probabilities. They also depend on the choice of threshold, which makes comparison difficult.</p>
-<p>The most widely used calibration metric for binary classification is binary cross-entropy. This is a tricky formula to master, as it is based on information theory <span class="citation" data-cites="shannon1948communication">(<a href="../references.html#ref-shannon1948communication" role="doc-biblioref">Shannon 1948</a>)</span>. It also uses logarithms, a concept that has not been covered yet.</p>
+<p>The most widely used calibration metric for binary classification is binary cross-entropy. This is a tricky formula to master, as it is based on information theory <span class="citation" data-cites="shannon1948communication">(<a href="../references.html#ref-shannon1948communication" role="doc-biblioref">Shannon 1948</a>)</span>. It uses logarithms, a concept that has not been covered yet.</p>
 <section id="logarithms" class="level2" data-number="26.1">
 <h2 data-number="26.1" class="anchored" data-anchor-id="logarithms"><span class="header-section-number">26.1</span> Logarithms</h2>
 <p>The logarithm, noted “log”, is the inverse operation of exponentiation. It is very important for machine learning. You may remember from the <a href="../chapters/log-reg-formula.html" target="_blank">logistic regression chapter</a> that exponentiation looks like:</p>
@@ -622,16 +622,36 @@ window.Quarto = {
 </section>
 <section id="cross-entropy" class="level2" data-number="26.2">
 <h2 data-number="26.2" class="anchored" data-anchor-id="cross-entropy"><span class="header-section-number">26.2</span> Cross-Entropy</h2>
-<p>Now that we understand logarithms, we can tackle cross-entropy. The cross-entropy formula has two parts, one for each possible value of the target <span class="math inline">\(y\)</span>.</p>
+<p>Now that we understand logarithms, we can tackle cross-entropy. The cross-entropy formula has two parts, one for each possible value of the target <span class="math inline">\(y\)</span>. Both parts use the natural logarithm <span class="math inline">\(\ln\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why the Natural Logarithm?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Cross-entropy comes from information theory, which uses the logarithm base 2, giving a loss measured in bits. Machine Learning uses the natural logarithm because of the rule seen above:</p>
+<p><span class="math display">\[
+\frac{d}{dx} \ln(x) = \frac{1}{x}
+\]</span></p>
+<p>As the loss will be minimised with gradient descent, <span class="math inline">\(\ln\)</span> is often preferred.</p>
+</div>
+</div>
+</div>
 <section id="loss-when-y-1" class="level3" data-number="26.2.1">
 <h3 data-number="26.2.1" class="anchored" data-anchor-id="loss-when-y-1"><span class="header-section-number">26.2.1</span> Loss When y = 1</h3>
 <p>The first part computes the loss when the target <span class="math inline">\(y\)</span> is 1:</p>
 <p><span class="math display">\[
-\text{Loss}_{y=1} = \log\left(\frac{1}{p}\right) = -\log(p)
+\text{Loss}_{y=1} = \ln\left(\frac{1}{p}\right) = -\ln(p)
 \]</span></p>
 <p>As a reminder, this is due to the rule:</p>
 <p><span class="math display">\[
-\log\left(\frac{1}{a}\right) = \log(a^{-1}) = -\log(a)
+\ln\left(\frac{1}{a}\right) = \ln(a^{-1}) = -\ln(a)
 \]</span></p>
 <p>Let’s plot this loss as a function of <span class="math inline">\(p\)</span>:</p>
 <div class="quarto-figure quarto-figure-center">
@@ -646,7 +666,7 @@ window.Quarto = {
 <h3 data-number="26.2.2" class="anchored" data-anchor-id="loss-when-y-0"><span class="header-section-number">26.2.2</span> Loss When y = 0</h3>
 <p>The second part computes the loss when the target <span class="math inline">\(y\)</span> is 0:</p>
 <p><span class="math display">\[
-\text{Loss}_{y=0} = \log\left(\frac{1}{1-p}\right) = \log((1-p)^{-1}) = -\log(1-p)
+\text{Loss}_{y=0} = \ln\left(\frac{1}{1-p}\right) = \ln((1-p)^{-1}) = -\ln(1-p)
 \]</span></p>
 <p>Plotting the loss as a function of <span class="math inline">\(p\)</span>:</p>
 <div class="quarto-figure quarto-figure-center">
@@ -672,24 +692,24 @@ window.Quarto = {
 </div>
 <p>Substituting the loss formulas, where:</p>
 <ul>
-<li><span class="math inline">\(\text{Loss}_{y_i=1} = -\log(p_i)\)</span></li>
-<li><span class="math inline">\(\text{Loss}_{y_i=0} = -\log(1-p_i)\)</span></li>
+<li><span class="math inline">\(\text{Loss}_{y_i=1} = -\ln(p_i)\)</span></li>
+<li><span class="math inline">\(\text{Loss}_{y_i=0} = -\ln(1-p_i)\)</span></li>
 </ul>
 <p>We get the full cross-entropy for a single observation:</p>
 <p><span class="math display">\[
-\text{CE}_i = y_i \cdot \left(-\log(p_i)\right) + (1 - y_i) \cdot \left(-\log(1 - p_i)\right)
+\text{CE}_i = y_i \cdot \left(-\ln(p_i)\right) + (1 - y_i) \cdot \left(-\ln(1 - p_i)\right)
 \]</span></p>
 <p>Factoring the negative sign out, we get:</p>
 <p><span class="math display">\[
-\text{CE}_i = -\left[ y_i \cdot \log(p_i) + (1 - y_i) \cdot \log(1 - p_i) \right]
+\text{CE}_i = -\left[ y_i \cdot \ln(p_i) + (1 - y_i) \cdot \ln(1 - p_i) \right]
 \]</span></p>
 <p>Computing the sum of this for the entire dataset of <span class="math inline">\(n\)</span> observations, we get:</p>
 <p><span class="math display">\[
-\text{CE} = \sum_{i=1}^{n} -\left[ y_i \cdot \log(p_i) + (1 - y_i) \cdot \log(1 - p_i) \right]
+\text{CE} = \sum_{i=1}^{n} -\left[ y_i \cdot \ln(p_i) + (1 - y_i) \cdot \ln(1 - p_i) \right]
 \]</span></p>
 <p>Putting the negative sign outside the sum, we get the total cross-entropy loss:</p>
 <p><span class="math display">\[
-\text{CE} = -\sum_{i=1}^{n} \left[ y_i \cdot \log(p_i) + (1 - y_i) \cdot \log(1 - p_i) \right]
+\text{CE} = -\sum_{i=1}^{n} \left[ y_i \cdot \ln(p_i) + (1 - y_i) \cdot \ln(1 - p_i) \right]
 \]</span></p>
 </section>
 </section>

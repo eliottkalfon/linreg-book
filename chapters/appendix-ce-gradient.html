@@ -485,7 +485,7 @@ window.Quarto = {
 <p>This appendix derives the gradient of the cross-entropy loss with respect to the weight vector <span class="math inline">\(\mathbf{w}\)</span>. It complements the <a href="../chapters/fitting-log-reg.html" target="_blank">fitting a logistic regression chapter</a>.</p>
 <p>As a reminder, the cross-entropy loss for a single observation <span class="math inline">\(i\)</span> is defined as:</p>
 <p><span class="math display">\[
-\text{CE}_i = -\left[ y_i \cdot \log(p_i) + (1 - y_i) \cdot \log(1 - p_i) \right]
+\text{CE}_i = -\left[ y_i \cdot \ln(p_i) + (1 - y_i) \cdot \ln(1 - p_i) \right]
 \]</span></p>
 <p>and for a dataset of <span class="math inline">\(n\)</span> observations:</p>
 <p><span class="math display">\[

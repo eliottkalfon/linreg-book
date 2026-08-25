@@ -528,12 +528,16 @@ window.Quarto = {
 \text{CE}(\mathbf{w}) = -\frac{1}{n} \sum_{i=1}^{n} \left[ y_i \ln(p_i) + (1 - y_i) \ln(1 - p_i) \right]
 \]</span></p>
 <p>Where <span class="math inline">\(p_i = \sigma(\mathbf{x}_i \mathbf{w})\)</span> is the predicted probability for observation <span class="math inline">\(i\)</span>.</p>
+<p>Just like the mean squared error, this sum can be written in vector notation:</p>
+<p><span class="math display">\[
+\text{CE}(\mathbf{w}) = -\frac{1}{n} \left[ \mathbf{y}^T \ln(\hat{\mathbf{y}}) + (\mathbf{1} - \mathbf{y})^T \ln(\mathbf{1} - \hat{\mathbf{y}}) \right]
+\]</span></p>
+<p>Where <span class="math inline">\(\hat{\mathbf{y}} = \sigma(\mathbf{X}\mathbf{w})\)</span> is the vector of predicted probabilities, <span class="math inline">\(\mathbf{1}\)</span> is a vector of ones, and <span class="math inline">\(\ln\)</span> is applied to each element of the vector. Each dot product sums a term over all <span class="math inline">\(n\)</span> observations, which is exactly what the summation above does.</p>
 <p>Apart from these two differences, the idea of minimising the loss with gradient descent stays the same. The one tricky mathematical part will be to compute the gradient of the cross-entropy loss with regards to the weight vector <span class="math inline">\(\mathbf{w}\)</span>.</p>
-<p>This is the gradient of the cross-entropy loss function:</p>
+<p>The gradient of the cross-entropy loss function is the following:</p>
 <p><span class="math display">\[
 \nabla \text{CE}(\mathbf{w}) = \frac{1}{n} \mathbf{X}^T (\hat{\mathbf{y}} - \mathbf{y})
 \]</span></p>
-<p>Where <span class="math inline">\(\hat{\mathbf{y}} = \sigma(\mathbf{X}\mathbf{w})\)</span> is the vector of predicted probabilities.</p>
 <p>The full derivation can be found in the <a href="../chapters/appendix-ce-gradient.html#appendix-deriving-the-cross-entropy-gradient" target="_blank">appendix</a>. It is trickier than computing the MSE gradient, but still doable with the chain rule. I encourage the adventurous reader to give it a try.</p>
 <p>Does this look familiar? It is remarkably similar to the MSE gradient from the <a href="../chapters/fitting-mult-lin-reg.html" target="_blank">multiple linear regression chapter</a>:</p>
 <p><span class="math display">\[
@@ -697,7 +701,15 @@ window.Quarto = {
 <li>Compute the gradient at each step.</li>
 <li>Update the weights using a learning rate of <span class="math inline">\(0.5\)</span>.</li>
 </ol>
-<p>Hint: <span class="math inline">\(\sigma(-0.073) \approx 0.482\)</span>, <span class="math inline">\(\sigma(0.010) \approx 0.503\)</span>, <span class="math inline">\(\sigma(0.094) \approx 0.523\)</span>, <span class="math inline">\(\sigma(-0.196) \approx 0.451\)</span>, <span class="math inline">\(\sigma(-0.150) \approx 0.462\)</span>, <span class="math inline">\(\sigma(-0.105) \approx 0.474\)</span>.</p>
+<p>Hint:</p>
+<ul>
+<li><span class="math inline">\(\sigma(-0.073) \approx 0.482\)</span></li>
+<li><span class="math inline">\(\sigma(0.010) \approx 0.503\)</span></li>
+<li><span class="math inline">\(\sigma(0.094) \approx 0.523\)</span></li>
+<li><span class="math inline">\(\sigma(-0.196) \approx 0.451\)</span></li>
+<li><span class="math inline">\(\sigma(-0.150) \approx 0.462\)</span></li>
+<li><span class="math inline">\(\sigma(-0.105) \approx 0.474\)</span></li>
+</ul>
 </div>
 <p>Continuing this process for many more iterations, the algorithm converges to weights that produce an S-shaped curve through the data: low probability for small tumours, high probability for large tumours.</p>
 <div class="quarto-figure quarto-figure-center">
