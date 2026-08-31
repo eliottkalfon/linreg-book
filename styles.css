@@ -1,0 +1,106 @@
+/* A quiet end-of-page invitation, adapted from the companion book's footer. */
+.book-support {
+  grid-column: body-content-start / body-content-end;
+  max-width: 800px;
+  margin: 4rem auto 2rem;
+  padding: 2.5rem 2rem;
+  border: 1px solid #e0d6b8;
+  border-radius: 12px;
+  background: #fffdf9;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 5%);
+  text-align: center;
+}
+
+.no-book-support .book-support {
+  display: none;
+}
+
+.book-support__eyebrow {
+  margin: 0 0 0.4rem;
+  color: #517699;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.book-support__text {
+  max-width: 620px;
+  margin: 1rem auto 1.6rem;
+  color: #444;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.book-support__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.book-support__button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.15rem;
+  border: 1px solid #517699;
+  border-radius: 4px;
+  color: #3f5e78 !important;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-decoration: none !important;
+  transition: background-color 160ms ease, border-color 160ms ease,
+    box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.book-support__button:hover,
+.book-support__button:focus-visible {
+  border-color: #3f5e78;
+  background: #f2f6f9;
+  color: #30495e !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgb(63 94 120 / 16%);
+}
+
+.book-support__button--primary {
+  border-color: #517699;
+  background: #517699;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgb(81 118 153 / 18%);
+}
+
+.book-support__button--primary:hover,
+.book-support__button--primary:focus-visible {
+  background: #3f5e78;
+  color: #fff !important;
+}
+
+@media (max-width: 600px) {
+  .book-support {
+    margin: 3rem 0 1.5rem;
+    padding: 2rem 1rem;
+  }
+
+  .book-support__actions {
+    flex-direction: column;
+  }
+
+  .book-support__button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-support__button {
+    transition: none;
+  }
+
+  .book-support__button:hover,
+  .book-support__button:focus-visible {
+    transform: none;
+  }
+}
