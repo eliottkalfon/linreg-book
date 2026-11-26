@@ -104,3 +104,6 @@
     transform: none;
   }
 }
+
+.site-privacy { text-align: center; font-size: 0.9rem; margin: 2rem 0 1rem; }
+.site-privacy a { color: #6c757d; }
